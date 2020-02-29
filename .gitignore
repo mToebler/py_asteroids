@@ -1,2 +1,4 @@
 asteroids.code-workspace
-
+*.pyc
+.DS_Store
+settings.json
