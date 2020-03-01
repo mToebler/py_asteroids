@@ -40,10 +40,10 @@ class Point:
         #   point = point + another_point
         return_point = Point(self.x, self.y)
         
-        if type(other) == Point:            
+        if isinstance(other, Point):
             return_point.x += other.x
             return_point.y += other.y
-        elif type(other) == Velocity:
+        elif isinstance(other, Velocity):
             return_point.x += other.dx
             return_point.y += other.dy
         elif type(other) == int or float:
@@ -92,7 +92,7 @@ class Point:
         """
         Will move by the provided vector value (a Velocity|dx & dy attributes)
         """
-        if type(velocity) == Velocity:
+        if isinstance(velocity, Velocity):
             self.x += velocity.dx
             self.y += velocity.dy
         else:

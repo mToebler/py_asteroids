@@ -2,6 +2,7 @@
 Author: Mark Tobler
 File: ship.py
 """
+from limited_velocity import LimitedVelocity
 import math
 import random
 import arcade
@@ -13,7 +14,9 @@ from bullet import Bullet
 
 class Ship(Flyer):
     """
-    Captures the idea of a flying ship in zero gravity. Ship extends flyer.
+    Captures the idea of a flying ship in zero gravity. Ship extends flyer. 
+    Uses LimitedVelocity instead of Velocity. Restricting speeds of the 
+    ship.
     """
     #class constants
     TURN_SIZE = 3
@@ -23,10 +26,12 @@ class Ship(Flyer):
         self.name = 'Ship'
         self.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
         self.rotation = AngularVelocity(1)
+        # overriding Flyer to use LimitedVelocity
+        self.velocity = LimitedVelocity()
         # three textures for emulating flames.
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
-        self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust.png')
-        self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
+        self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
+        self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2-0.png')
         # self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_flames3.png')
         # self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_flames2.png')
         self.radius = 30
@@ -50,8 +55,12 @@ class Ship(Flyer):
     
     def thrust(self):
         """Applies force towards the current angle's direction"""
-        self.velocity.dx += self.__thrust * math.cos(math.pi * (self.rotation.angle+90) / 180.0) 
-        self.velocity.dy += self.__thrust * math.sin(math.pi * (self.rotation.angle+90) / 180.0)
+        dx = self.velocity.dx + self.__thrust * math.cos(math.pi * (self.rotation.angle+90) / 180.0) 
+        dy = self.velocity.dy + self.__thrust * math.sin(math.pi * (self.rotation.angle+90) / 180.0)
+        # in order to get around limits hindering movement when approaching limit.
+        self.velocity.set_velocity(dx, dy)
+        # print(f"SHIP: thrust: can't set new velocity values: {dx},{dy}; current: {self.velocity}")
+
         # self.velocity.dx += self.__thrust * math.cos(math.pi * (self.rotation.angle) / 180.0) 
         # self.velocity.dy += self.__thrust * math.sin(math.pi * (self.rotation.angle) / 180.0)        
         self.__thrusting = True

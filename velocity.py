@@ -10,6 +10,7 @@ expressed by the change, or delta, in a point (x and y)
     __init__()
 """
 import math
+
 class Velocity:
     def __init__(self, dx=0.0, dy=0.0):
         """ Constructor: defaulting values to 0.0 if none provided"""

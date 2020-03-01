@@ -1,9 +1,9 @@
 """
 File: asteroids.py
 Original Author: Br. Burton
+Student Author: Mark Tobler
 Designed to be completed by others
-
-This program implements the asteroids game.
+This program implements an asteroids game.
 """
 from math import e
 from os import system
@@ -43,7 +43,7 @@ class Game(arcade.Window):
         arcade.set_background_color(arcade.color.SMOKY_BLACK)
         self.reset = True
         self.held_keys = set()
-        # consider turning ship into a list of 1.
+        
         self.ship = Ship()
         self.rocks = []
         # need to setup the rocks.
@@ -180,6 +180,8 @@ class Game(arcade.Window):
             elif flyer.center+ flyer.radius < Point():
                 self._wrap_flyer(flyer)
         # the bullets
+        for flyer in self.bullets:
+            self._wrap_flyer(flyer)
     
     def _check_zombies(self):
         for flyer in self.rocks:
