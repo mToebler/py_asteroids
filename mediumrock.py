@@ -20,14 +20,17 @@ class MediumRock(Rock):
     MEDIUM_ROCK_RADIUS = 5
 
     def __init__(self, startPoint, startVelocity):
-        super().__init__()
-        self.radius = MediumRock.MEDIUM_ROCK_RADIUS
+        super().__init__()        
         self.rotation = AngularVelocity(MediumRock.MEDIUM_ROCK_SPIN)
         self.velocity = startVelocity
-        
         #arcade image
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'meteorGrey_med1.png')
-        
+        self.radius = self.texture/2
+        #self.radius = MediumRock.MEDIUM_ROCK_RADIUS
+        # only bigrocks get an initial velocity. Other rocks inherit theirs 
+        # from the rock it breaks off from
+        self.velocity = startVelocity
+
         
     
     

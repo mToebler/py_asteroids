@@ -79,4 +79,6 @@ class Flyer(ABC):
         else:
             return False
         
-        
+    def __repr__(self):
+        return f'{self.name}: c:{self.center} r:{self.radius} v:{self.velocity}'    
+    

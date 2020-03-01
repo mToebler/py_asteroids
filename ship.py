@@ -3,6 +3,7 @@ Author: Mark Tobler
 File: ship.py
 """
 import math
+import random
 import arcade
 import constants
 from flyer import Flyer
@@ -22,9 +23,14 @@ class Ship(Flyer):
         self.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
         self.rotation = AngularVelocity(1)
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
+        self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust.png')
+        self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
+        # self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_flames3.png')
+        # self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_flames2.png')
         self.radius = 30
         # just private
         self.__thrust = 0.25 
+        self.__thrusting = False
         
     def turn(self, angle):
         """rotates by the given angle"""
@@ -44,6 +50,7 @@ class Ship(Flyer):
         """Applies force towards the current angle's direction"""
         self.velocity.dx += self.__thrust * math.cos(math.pi * (self.rotation.angle+90) / 180.0) 
         self.velocity.dy += self.__thrust * math.sin(math.pi * (self.rotation.angle+90) / 180.0)
+        self.__thrusting = True
 
     def advance(self):
         """Moves Ship from one moment to the next."""
@@ -57,5 +64,12 @@ class Ship(Flyer):
         """
         used by extending classes to draw using texture
         """
-        arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.rotation.angle))
+        if (self.__thrusting):
+            if random.random() * 10 % 2 < 1:
+                arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_texture, (self.rotation.angle))
+            else:
+                arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_alt_texture, (self.rotation.angle))
+            self.__thrusting = False
+        else:
+            arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.rotation.angle))
         
