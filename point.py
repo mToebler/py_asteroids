@@ -16,7 +16,7 @@ class Point:
     """Simple point class (x,y) comparable"""
     #static constants
     
-    @property
+    #@property
     @classmethod
     def LOW_POINT(cls):
         return Point(0.0,0.0)

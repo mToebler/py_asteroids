@@ -73,6 +73,7 @@ class Game(arcade.Window):
             
         for bullet in self.bullets:
             bullet.draw()
+            
         self.ship.draw()
 
     def update(self, delta_time):
@@ -95,7 +96,7 @@ class Game(arcade.Window):
         self._advance_flyer(self.bullets)
         self.ship.advance()
         self._check_boundaries()
-        #self._check_zombies()
+        self._check_zombies()
         
         # TODO: Tell everything to advance or move forward one step in time
 
@@ -121,7 +122,7 @@ class Game(arcade.Window):
 
         # Machine gun mode...
         #if arcade.key.SPACE in self.held_keys:
-        #    pass
+            #self.bullets.append(self.ship.fire())
 
 
     def on_key_press(self, key: int, modifiers: int):
@@ -134,7 +135,7 @@ class Game(arcade.Window):
 
             if key == arcade.key.SPACE:
                 # TODO: Fire the bullet here!
-                pass
+                self.bullets.append(self.ship.fire())
 
     def on_key_release(self, key: int, modifiers: int):
         """
@@ -179,7 +180,17 @@ class Game(arcade.Window):
             elif flyer.center+ flyer.radius < Point():
                 self._wrap_flyer(flyer)
         # the bullets
-            
+    
+    def _check_zombies(self):
+        for flyer in self.rocks:
+            if not flyer.alive:
+                self.rocks.remove(flyer)
+        
+        for flyer in self.bullets:
+            if not flyer.alive:
+                self.bullets.remove(flyer)
+                
+    
     def _wrap_flyer(self, flyer):
         """
         manipulates a flyer's center point to wrap around the arcade window

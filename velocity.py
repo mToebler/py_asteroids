@@ -25,6 +25,15 @@ class Velocity:
         Factory method: returns a Velocity Object based upon the provided 
                         speed and angle.
         """
-        return Velocity(speed * math.sin(angle), speed * math.cos(angle))
+        return Velocity(speed * math.cos(angle*math.pi/180), speed * math.sin(angle*math.pi/180))
+    
+    @property
+    def speed(self):
+        """
+        the magnitude, or speed, of a velocity forms the hypotenuse of the 
+        right triangle formed by dx, dy. If squared  and added, the sqroot 
+        will be the speed. Thank you Pythagorus.
+        """
+        return math.sqrt(self.dx * self.dx + self.dy * self.dy)
             
 # this is it for now. May use some of the dunder methods for comparing and adding velocities later.

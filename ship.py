@@ -9,6 +9,7 @@ import constants
 from flyer import Flyer
 from angularvelocity import AngularVelocity
 from point import Point
+from bullet import Bullet
 
 class Ship(Flyer):
     """
@@ -22,6 +23,7 @@ class Ship(Flyer):
         self.name = 'Ship'
         self.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
         self.rotation = AngularVelocity(1)
+        # three textures for emulating flames.
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
         self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust.png')
         self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
@@ -50,9 +52,17 @@ class Ship(Flyer):
         """Applies force towards the current angle's direction"""
         self.velocity.dx += self.__thrust * math.cos(math.pi * (self.rotation.angle+90) / 180.0) 
         self.velocity.dy += self.__thrust * math.sin(math.pi * (self.rotation.angle+90) / 180.0)
+        # self.velocity.dx += self.__thrust * math.cos(math.pi * (self.rotation.angle) / 180.0) 
+        # self.velocity.dy += self.__thrust * math.sin(math.pi * (self.rotation.angle) / 180.0)        
         self.__thrusting = True
+        
+    def fire(self):
+        """
+        The ship fires the bullet, passing on its own angle and velocity 
+        """
+        return Bullet((self.center + 0), self.rotation.display_angle, self.velocity)
 
-    def advance(self):
+    def advance(self):  
         """Moves Ship from one moment to the next."""
         # with ship, there's velocity as well as rotational veloctiy 
         # that needs to be considered. 

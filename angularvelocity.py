@@ -43,11 +43,17 @@ class AngularVelocity(Velocity):
 
     @angle.setter
     def angle(self, angle):
+        """Angle is off by 90 in asteroids. Correct"""
+        # angle = angle + 90
         if angle < 0:
             # convert to a normal angle. Angles start from the x axis
             self._angle = 360 - (math.fabs(angle) % 360)
         else:
             self._angle = angle % 360
+    
+    @property
+    def display_angle(self):
+        return (self._angle + 90) % 360    
         
     @property
     def drag(self):
