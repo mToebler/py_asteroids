@@ -45,9 +45,8 @@ class Ship(Flyer):
     def turn(self, angle):
         """rotates by the given angle"""
         #AngularVelocity will handle rotations
-        self.rotation.angle = self.rotation.angle + angle
-        if self.velocity.dx != 0:
-            print(f'Ship: turn(): angle = {self.rotation.angle}; radians = {self.rotation.angle *  math.pi / 180}')
+        self.rotation.angle = self.rotation.angle + angle        
+        print(f'Ship: turn(): angle = {self.rotation.angle}; radians = {self.rotation.angle *  math.pi / 180}')
         
     def turn_left(self):
         """Turns clockise by Ship.SHIP_TURN_AMOUNT"""
