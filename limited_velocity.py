@@ -14,7 +14,7 @@ limits.
     _dy : float
     __init__()
 """
-from math import sqrt, pow
+from math import sqrt, pow, tan, atan, sin, cos, pi
 from velocity import Velocity
 from point import Point
 
@@ -25,11 +25,13 @@ class LimitedVelocity(Velocity):
   introduce limits.  max_speed should be defined before dx and dy, 
   otherwise, they'll end up limited by default max_speed
   """
-  MAX_SPEED_DEFAULT = 30
+  MAX_SPEED_DEFAULT = 20
   
   def __init__(self, dx=0.0, dy=0.0, max_speed = MAX_SPEED_DEFAULT):
     # not calling super just yet
     self.max_speed = max_speed
+    # engine is insisting I add this. Tho, there's no such 
+    # requirement for dx. Why? Must be because _dy is used
     self._dy = 0.0
     self.dx = dx
     self.dy = dy
@@ -59,21 +61,26 @@ class LimitedVelocity(Velocity):
     """
     can't be over max_speed. dy^2 together with dx^2 cannot be over max_speed^2
     """
-    # however, speed is scalar. Need to compute using dx
+    # speed is scalar. Need to compute using dx
     if (pow(dy,2) + pow(self._dx,2)  > pow(self.max_speed,2)):
-      self._dy = sqrt(pow(self.max_speed,2) - pow(self._dx,2)) * dy/abs(dy)
+      self._dy = (sqrt(pow(self.max_speed,2) - pow(self._dx,2))) * dy/abs(dy)
     else:
       self._dy = dy
     
   def set_velocity(self, dx, dy):
     """
     Helper Method to set dx and dy when replacing values individually 
-    causes loss in precision due to limits. Returns Bool value of success
+    causes loss in precision due to limits. 
     """
+    # using Pythagorean theorem to assess if limiting should take place.
     if (pow(dx,2) + pow(dy,2) > pow(self.max_speed,2)):
-      # rather than fail, divide max_speed up by ration of dx to dy
-      self._dx = self.max_speed * (dx/(abs(dy) + abs(dx)))
-      self._dy = self.max_speed * (dy/(abs(dy) + abs(dx)))
+      # rather than fail, divide max_speed up by ratio of dx to dy
+      print(f'limited_velocity: set_velocity: attempted to set speed to :{sqrt(pow(dx, 2)+pow(dy,2))}')
+      # the values of dx and dy are squared, added together and, de-squared 
+      # to form a working ratio when adjusting speed at the limit.
+      self._dx = self.max_speed * (dx/sqrt(pow(dy, 2) + pow(dx,2)))
+      self._dy = self.max_speed * (dy/sqrt(pow(dy, 2) + pow(dx,2)))
+      print(f'       debug:(set to):{self}')
     else:
       self._dx = dx
       self._dy = dy
