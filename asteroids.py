@@ -53,11 +53,6 @@ class Game(arcade.Window):
         # lives it outside of ship's scope.
         # TODO: declare anything here you need the game class to track
 
-    # @classmethod
-    # def game_random(cls, start_bound, end_bound):
-    #     return random.randint(start_bound, end_bound)
-        
-    
     def on_draw(self):
         """
         Called automatically by the arcade framework.

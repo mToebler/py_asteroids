@@ -25,10 +25,10 @@ class Rock(Flyer, ABC):
         self.texture = None #arcade.load_texture(None)
         self.spin = 0
         if startPoint is None:            
-            self.center = Point(random.randint(1, constants.SCREEN_WIDTH), random.randint(1, constants.SCREEN_HEIGHT))
+            self.center = Point(random.random() * constants.SCREEN_WIDTH, random.random() * constants.SCREEN_HEIGHT)
         else:
             self.center = startPoint
-        self.angle = random.randint(1, 360)
+        self.angle = random.random() * 360
     
     def draw(self):
         """
