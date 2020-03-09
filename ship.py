@@ -26,7 +26,6 @@ class Ship(Flyer):
 
     def __init__(self):
         super().__init__()
-        self.name = 'Ship'
         self.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
         self.rotation = AngularVelocity(1)
         # overriding Flyer to use LimitedVelocity
@@ -46,7 +45,7 @@ class Ship(Flyer):
         """rotates by the given angle"""
         #AngularVelocity will handle rotations
         self.rotation.angle = self.rotation.angle + angle        
-        print(f'Ship: turn(): angle = {self.rotation.angle}; radians = {self.rotation.angle *  math.pi / 180}')
+        if (constants.DEBUG): print(f'Ship: turn(): angle = {self.rotation.angle}; radians = {self.rotation.angle *  math.pi / 180}')
         
     def turn_left(self):
         """Turns clockise by Ship.SHIP_TURN_AMOUNT"""

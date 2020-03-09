@@ -32,7 +32,7 @@ class Velocity:
     def velocity_from_speed_radians(cls, speed=0.0, radians=0.0):
         """
         Factory method: returns a Velocity Object based upon the provided 
-                        speed and angle.
+                        speed and radians.
         """
         return Velocity(speed * math.cos(radians), speed * math.sin(radians))
     

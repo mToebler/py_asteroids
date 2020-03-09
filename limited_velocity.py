@@ -15,6 +15,7 @@ limits.
     __init__()
 """
 from math import sqrt, pow, tan, atan, sin, cos, pi
+import constants
 from velocity import Velocity
 from point import Point
 
@@ -75,12 +76,12 @@ class LimitedVelocity(Velocity):
     # using Pythagorean theorem to assess if limiting should take place.
     if (pow(dx,2) + pow(dy,2) > pow(self.max_speed,2)):
       # rather than fail, divide max_speed up by ratio of dx to dy
-      print(f'limited_velocity: set_velocity: attempted to set speed to :{sqrt(pow(dx, 2)+pow(dy,2))}')
+      if (constants.DEBUG): print(f'limited_velocity: set_velocity: attempted to set speed to :{sqrt(pow(dx, 2)+pow(dy,2))}')
       # the values of dx and dy are squared, added together and, de-squared 
       # to form a working ratio when adjusting speed at the limit.
       self._dx = self.max_speed * (dx/sqrt(pow(dy, 2) + pow(dx,2)))
       self._dy = self.max_speed * (dy/sqrt(pow(dy, 2) + pow(dx,2)))
-      print(f'       debug:(set to):{self}')
+      if (constants.DEBUG): print(f'       debug:(set to):{self}')
     else:
       self._dx = dx
       self._dy = dy

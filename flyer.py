@@ -4,6 +4,7 @@ File: flyer.py
 """
 import arcade 
 from abc import ABC
+import constants
 from point import Point
 from velocity import Velocity
 
@@ -36,7 +37,7 @@ class Flyer(ABC):
     def __init__(self):
         # while Flyer should be considered abstract, this lays out
         # the framework here. See notes above.
-        self.name = 'Flyer'
+        self.name = self.__class__.__name__
         self.center = Point()
         self.velocity = Velocity()
         self.radius = 1
@@ -56,8 +57,9 @@ class Flyer(ABC):
         # likely will be overridden to appropriate shapes
         # Bullet and target use this as is. Not making abstractmethod.
         if self.alive:
-            arcade.draw_circle_filled(self.center.x, self.center.y,
-                                        self.radius, self.color)
+            arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, self.angle)
+            # arcade.draw_circle_filled(self.center.x, self.center.y,
+            #                             self.radius, self.color)
 
     def is_off_screen(self, screen_width, screen_height):
         # check if either x or y is past the provided coordinates.
@@ -74,10 +76,14 @@ class Flyer(ABC):
         # subtracting the greater's one center point from the other and 
         # returning true if that point falls within range of the square of the 
         # combined radii.
-        if ((self.center * self.center) > (otherFlyer.center * otherFlyer.center)):
-            return False
-        else:
-            return False
+        #if ((self.center * self.center) > (otherFlyer.center * otherFlyer.center)):
+        distance = self.center - otherFlyer.center
+        return_value = False
+        if abs(distance.x) <= self.radius + otherFlyer.radius and abs(distance.y) <= self.radius + otherFlyer.radius:
+            if (constants.DEBUG):
+                print(f'DEBUG: flyer.is_near: returning TRUE for is_near: distance is {distance}')
+            return_value = True
+        return return_value
         
     def __repr__(self):
         return f'{self.name}: c:{self.center} r:{self.radius} v:{self.velocity}'    

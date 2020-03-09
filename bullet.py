@@ -14,7 +14,7 @@ class Bullet(Flyer):
     is created when another object fires it. When initialized, 
     a bullet will add it's own velocity to that which it has inherited.
     """    
-    BULLET_RADIUS = 30
+    BULLET_RADIUS = 3  # 30 seems TOO high!
     BULLET_SPEED = 10
     BULLET_LIFE = 90
 
@@ -58,8 +58,8 @@ class Bullet(Flyer):
     def draw(self):
         """Only draws itself 60 times"""
         #super().draw()
-        arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.angle))
-        self.life -= 1    
+        super().draw() #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.angle))
+        self.life -= 1    #TODO: put this in advance() ??? 
         
     def advance(self):
         super().advance()

@@ -9,3 +9,6 @@ SCREEN_HEIGHT = 600
 INITIAL_ROCK_COUNT = 5
 
 PATH_IMAGES = 'images/'
+
+# DEBUG = False
+DEBUG = True

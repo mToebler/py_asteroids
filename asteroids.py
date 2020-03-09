@@ -7,6 +7,7 @@ This program implements an asteroids game.
 """
 from math import e
 from os import system
+import time
 import random
 import arcade
 import constants
@@ -45,6 +46,8 @@ class Game(arcade.Window):
         self.held_keys = set()
         
         self.ship = Ship()
+        # TODO: Consider turning these into python sets rather than lists.
+        #       Removing elements from the middle would be faster.
         self.rocks = []
         # need to setup the rocks.
         self.bullets = []
@@ -85,10 +88,18 @@ class Game(arcade.Window):
                             (random.random() * constants.SCREEN_HEIGHT))
                 self.rocks.append(BigRock(point))
             self.ship = Ship()
+            time.sleep(2)        
+        
+        if len(self.rocks) < 1:
+            self.reset = True
+            self.bullets.clear()
+            if(constants.DEBUG): print('Game: Resetting!')
+            #!!! increase starting rock count
+            constants.INITIAL_ROCK_COUNT += 1
 
         self.check_keys()
-        self._advance_flyer(self.rocks)
-        self._advance_flyer(self.bullets)
+        self._advance_flyers(self.rocks)
+        self._advance_flyers(self.bullets)
         self.ship.advance()
         self._check_boundaries()
         self._check_zombies()
@@ -96,7 +107,7 @@ class Game(arcade.Window):
         # TODO: Tell everything to advance or move forward one step in time
 
         # TODO: Check for collisions
-        #self._check_flyer_collisions()
+        self._check_flyer_collisions()
 
     def check_keys(self):
         """
@@ -116,8 +127,8 @@ class Game(arcade.Window):
             pass
 
         # Machine gun mode...
-        #if arcade.key.SPACE in self.held_keys:
-            #self.bullets.append(self.ship.fire())
+        if arcade.key.SPACE in self.held_keys:
+            self.bullets.append(self.ship.fire())
 
 
     def on_key_press(self, key: int, modifiers: int):
@@ -139,30 +150,50 @@ class Game(arcade.Window):
         if key in self.held_keys:
             self.held_keys.remove(key)
             
-    def _advance_flyer(self, flyers):
+    def _advance_flyers(self, flyers):
         for flyer in flyers:
 #            print(f'Asteroid: advancing flyer {flyer}')
             flyer.advance()
             
     def _check_flyer_collisions(self):
         """ check for collisions amongst the rocks for bullets, and ship"""
+        # create a temp collection to hold the created rocks during this process.
+        new_rocks = set()
         # hmmm... is there anyother way than to iterate through the lists
         # and compare one at a time?
         for rock in self.rocks:
             # these both have flyer's center points which has +, - and 
             # comparison ability
             for bullet in self.bullets:
-                if (rock.is_near(bullet)):
+                temp_rocks = None
+                if (rock.is_near(bullet)):                    
+                    if (constants.DEBUG): 
+                        print(f'debug: game._check_flyer_collisions: {bullet}')
+                    temp_rocks = rock.split() 
+                    for tr in temp_rocks:
+                        new_rocks.add(tr)
+                        if (constants.DEBUG): 
+                            print(f'\n\ndebug: game._check_flyer_collisions: added {tr} to\nnew_rocks:{new_rocks}')
+                                            
                     rock.alive = False
-                    # on to the next rock
-                    break
+                    bullet.alive = False
+                    continue
+                    # on to the next bullet. Both rock/bullet will be removed
+                    # during zombie check.
             
             if rock.is_near(self.ship):
-                self.ship.alive = False
-        
+                if (constants.DEBUG):
+                    print(f'debug: game._check_flyer_collisions: {self.ship}')
+                    print(f'debug: game._check_flyer_collisions: {rock}')
+                #self.ship.alive = False
+        # now add new_rocks set to the mix:
+        if len(new_rocks) > 0 : 
+            for r in new_rocks: # when self.rocks becomes a set, this will change. TODO
+                self.rocks.append(r)
+            
     def _check_boundaries(self):
         """
-        Checks for and adjusts flyers' centers if affected by screen limits
+        Checks for and adjusts flyers center if affected by screen limits
         """
         edgePoint = Point(SCREEN_WIDTH,SCREEN_HEIGHT)
         # the ship
@@ -170,10 +201,10 @@ class Game(arcade.Window):
         #TODO: the radius doesn't seem right. FIX
         # the rocks
         for flyer in self.rocks:
-            if flyer.center- flyer.radius > edgePoint:
-                self._wrap_flyer(flyer)
-            elif flyer.center+ flyer.radius < Point():
-                self._wrap_flyer(flyer)
+            # if flyer.center- flyer.radius > edgePoint:
+            #     self._wrap_flyer(flyer)
+            # elif flyer.center+ flyer.radius < Point():
+            self._wrap_flyer(flyer)
         # the bullets
         for flyer in self.bullets:
             self._wrap_flyer(flyer)

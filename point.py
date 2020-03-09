@@ -99,7 +99,8 @@ class Point:
             print(f'point: move_by: {type(velocity)}not a velocity object.')
         return self
     
-    #implementing the rich comparison operators
+    # implementing the rich comparison operators
+    # NOTE: in the arcade environment, all x, y values are positive.
     def __lt__(self, other):
         return True if self.x < other.x else True if self.y < other.y else False
 
