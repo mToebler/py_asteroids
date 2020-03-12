@@ -14,7 +14,7 @@ class Bullet(Flyer):
     is created when another object fires it. When initialized, 
     a bullet will add it's own velocity to that which it has inherited.
     """    
-    BULLET_RADIUS = 3  # 30 seems TOO high!
+    BULLET_RADIUS = 2  # 30 seems TOO high!
     BULLET_SPEED = 10
     BULLET_LIFE = 30
 

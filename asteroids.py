@@ -21,12 +21,41 @@ from ship import Ship
 from bigrock import BigRock
 from smallrock import SmallRock
 from alien import Alien
+from timerrock import TimerRock
 
 
 # These are Global constants to use throughout the game
 # These have been moved to constants or to each applicable class
 # so they can be accessed like so: Bullet.BULLET_RADIUS
 
+# TODO: 
+# 1. Scoring. Implement a scoring structure.
+#       Score will display with a mid range alpha value
+#       Big rock:    5 pts
+#       Med rock:   10 pts
+#       Sm rock:    15 pts
+#       Alien ship: 25 pts
+#       Alien lzr:   0 pts
+#       Perhaps every 100 pts an extra y seconds of shields awarded.#
+# 2. Shielding for ship. 
+#       ship starts with x number of seconds of shields.
+#       when a level is cleared y seconds is added on top 
+#       of remaining shield time. Shield time is automatically
+#       deducted depending on the target hit:
+#           Big rock = y * .5 seconds
+#           Med rock = y * .25 secs
+#           Sml rock = y * .125 secs
+#           Alien lzr: y * .5 secs
+#           Alien shp: y * 1 sec 
+#       Shields will simply be a thin circle around the ship. It's 
+#       color will change depending on amount of time left and blink
+#       when time added:
+#           light blue:  > x secs
+#           medium blue: < x secs
+#           dark blue:   < y secs #  
+# or...
+# 3. Invincible mode? 
+# 4. Better level transitions. Consider having the ship no freeze up.  #
 class Game(arcade.Window):
     """
     This class handles all the game callbacks and interaction
@@ -82,7 +111,7 @@ class Game(arcade.Window):
         Update each object in the game.
         :param delta_time: tells us how much time has actually elapsed
         """
-        if (self.reset):
+        if (self.reset and len(self.rocks) < 1):
             self.reset = False
             random.seed()
             #generate rocks
@@ -90,20 +119,23 @@ class Game(arcade.Window):
                 point = Point((random.random() * constants.SCREEN_WIDTH), 
                             (random.random() * constants.SCREEN_HEIGHT))
                 self.rocks.append(BigRock(point))
-            self.ship = Ship()
-            time.sleep(1)        
-        
-        if len(self.rocks) < 1:
-            self.reset = True
-            self.bullets.clear()
-            if(constants.DEBUG): print('Game: Resetting!')
-            #!!! increase starting rock count
-            constants.INITIAL_ROCK_COUNT += 1
-        elif (0 < len(self.rocks) < 5):
-            if random.random() * Alien.APPEAR_CHANCE < 1:
-                # TODO: move away from this cludge!
-                if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
-                self.rocks.append(Alien())
+            if self.ship is None:
+                self.ship = Ship()
+            #time.sleep(1)        
+            
+        if (not self.reset):
+            if len(self.rocks) < 1:
+                self.reset = True
+                self.bullets.clear()
+                if(constants.DEBUG): print('Game: Resetting! Adding TimerRock')
+                #!!! increase starting rock count
+                constants.INITIAL_ROCK_COUNT += 1
+                self.rocks.append(TimerRock())
+            elif (0 < len(self.rocks) < 5):
+                if random.random() * Alien.APPEAR_CHANCE < 1:
+                    # TODO: move away from this cludge!
+                    if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
+                    self.rocks.append(Alien())
 
         self.check_keys()
         self._advance_flyers(self.rocks)
@@ -134,7 +166,8 @@ class Game(arcade.Window):
         if arcade.key.DOWN in self.held_keys:
             pass
 
-        # Machine gun mode...
+        # Machine gun mode... TODO: come up with a reasonable machine gun
+        #                           implementation.
         if arcade.key.SPACE in self.held_keys:
             self.bullets.append(self.ship.fire())
 
@@ -185,10 +218,13 @@ class Game(arcade.Window):
                                             
                     rock.alive = False
                     bullet.alive = False
-                    continue
-                    # on to the next bullet. Both rock/bullet will be removed
-                    # during zombie check.
-            
+                    #Both rock/bullet will be removed
+                    # during zombie check.                    
+                    continue #break
+                    # why continue and not break? break would stop all bullets
+                    # from being processed while continue just stops this 
+                    # iteration.
+                    
             if rock.is_near(self.ship):
                 if (constants.DEBUG):
                     print(f'debug: game._check_flyer_collisions: {self.ship}')
