@@ -16,7 +16,7 @@ class Bullet(Flyer):
     """    
     BULLET_RADIUS = 3  # 30 seems TOO high!
     BULLET_SPEED = 10
-    BULLET_LIFE = 90
+    BULLET_LIFE = 30
 
     def __init__(self, start_point, angle, inherited_velocity):
         # adds Bullet_speed to this velocity
@@ -59,7 +59,7 @@ class Bullet(Flyer):
         """Only draws itself 60 times"""
         #super().draw()
         super().draw() #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.angle))
-        self.life -= 1    #TODO: put this in advance() ??? 
+        #self.life -= 1    #TODO: put this in advance() ??? 
         
     def advance(self):
         super().advance()

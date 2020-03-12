@@ -44,7 +44,8 @@ class Flyer(ABC):
         self.alive = True
         # all flyers have a color. Here to back up any that don't specify
         self.color = arcade.color.PINK
-
+        self.angle = 0
+        
     def advance(self):
         """Override if more complex than simple move by velocity"""
         self.center.move_by(self.velocity)

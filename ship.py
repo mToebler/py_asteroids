@@ -30,12 +30,12 @@ class Ship(Flyer):
         self.rotation = AngularVelocity(1)
         # overriding Flyer to use LimitedVelocity
         self.velocity = LimitedVelocity()
-        # three textures for emulating flames.
+        # three textures for emulating flames. 
+        # TODO: Consider upgrading the ship to a sprite which can hold 
+        # different textures in an array. May be more efficient in memory ? 
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
         self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
         self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2-0.png')
-        # self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_flames3.png')
-        # self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_flames2.png')
         self.radius = Ship.SHIP_RADIUS
         # just private
         self.__thrust = Ship.SHIP_THRUST_AMOUNT
@@ -61,10 +61,6 @@ class Ship(Flyer):
         dy = self.velocity.dy + (self.__thrust * Velocity.sine(self.rotation.angle + 90))
         # in order to get around limits hindering movement when approaching limit.
         self.velocity.set_velocity(dx, dy)
-        # print(f"SHIP: thrust: can't set new velocity values: {dx},{dy}; current: {self.velocity}")
-
-        # self.velocity.dx += self.__thrust * math.cos(math.pi * (self.rotation.angle) / 180.0) 
-        # self.velocity.dy += self.__thrust * math.sin(math.pi * (self.rotation.angle) / 180.0)        
         self.__thrusting = True
         
     def fire(self):

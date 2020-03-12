@@ -5,7 +5,9 @@ Student Author: Mark Tobler
 Designed to be completed by others
 This program implements an asteroids game.
 """
-from math import e
+from velocity import Velocity
+from alienbullet import AlienBullet
+import math
 from os import system
 import time
 import random
@@ -18,6 +20,7 @@ from ship import Ship
 #from rock import Rock
 from bigrock import BigRock
 from smallrock import SmallRock
+from alien import Alien
 
 
 # These are Global constants to use throughout the game
@@ -88,7 +91,7 @@ class Game(arcade.Window):
                             (random.random() * constants.SCREEN_HEIGHT))
                 self.rocks.append(BigRock(point))
             self.ship = Ship()
-            time.sleep(2)        
+            time.sleep(1)        
         
         if len(self.rocks) < 1:
             self.reset = True
@@ -96,6 +99,11 @@ class Game(arcade.Window):
             if(constants.DEBUG): print('Game: Resetting!')
             #!!! increase starting rock count
             constants.INITIAL_ROCK_COUNT += 1
+        elif (0 < len(self.rocks) < 5):
+            if random.random() * Alien.APPEAR_CHANCE < 1:
+                # TODO: move away from this cludge!
+                if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
+                self.rocks.append(Alien())
 
         self.check_keys()
         self._advance_flyers(self.rocks)
@@ -185,6 +193,38 @@ class Game(arcade.Window):
                 if (constants.DEBUG):
                     print(f'debug: game._check_flyer_collisions: {self.ship}')
                     print(f'debug: game._check_flyer_collisions: {rock}')
+            if isinstance(rock, Alien):
+                # chance to fire a bullet at the ship
+                if random.random() * Alien.FIRE_CHANCE < 1:
+                    # as there is no rock.fire(), going to add this funcitonality here.
+                    # need to figure out the angle to feed to alienBullet.
+                    # it will be the difference of the alien & ship's x coordinates 
+                    # over the square root of the difference in both ships x 
+                    # and y coordinates summed and squared  (hypotenuse):
+                    # abs(alien.x - ship.x) / sqrt((alien.x - ship.x)^2 + (alien.y - ship.y)^2) # 
+                    # that will be in radians, so multiply it by 180/pi
+                    try:
+                        angle = math.sin((rock.center.x - self.ship.center.x)/math.sqrt(math.pow((rock.center.x - self.ship.center.x),2) + math.pow((rock.center.y - self.ship.center.y),2)))
+                        #angle = math.sin(((rock.center.x - self.ship.center.x) / abs(rock.center.x - self.ship.center.x) ) * abs(rock.center.x - self.ship.center.x)/math.sqrt(math.pow((rock.center.x - self.ship.center.x),2) + math.pow((rock.center.y - self.ship.center.y),2)))
+                        #angle = math.atan()
+                        angle = angle * 180/math.pi
+                    except ZeroDivisionError as e:
+                        # going to swallow this e, and move on.
+                        print(f'\n\nGame.update: caught a {e}. No biggy, moving on.\n\n')
+                        angle = 0
+                    finally:
+                        # let's add 90 degrees to this angle
+                        if(constants.DEBUG): print('_check_flyer_col: angle was ', angle)
+                        angle = (angle + 90) % 360
+                        # move on . org
+                    if(constants.DEBUG): print('_check_flyer_col: now using', angle, ' as angle for alien bullet.')
+                    p = Point(rock.center.x, rock.center.y)
+                    v = Velocity(rock.velocity.dx, rock.velocity.dy)
+                    aBullet = AlienBullet(p, angle, v)
+                    if(constants.DEBUG): print('_check_flyer_col: new alien bullet:', aBullet)
+                    new_rocks.add(aBullet)
+                    
+                
                 #self.ship.alive = False
         # now add new_rocks set to the mix:
         if len(new_rocks) > 0 : 
