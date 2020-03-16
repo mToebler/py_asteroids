@@ -18,6 +18,7 @@ class BigRock(Rock):
     A big rock extending (abstract) rock.
     """
     BIG_ROCK_SPIN = 1
+    BIG_ROCK_POINTS = 5
     BIG_ROCK_SPEED = 1.5
     BIG_ROCK_RADIUS = 15
 
@@ -30,6 +31,7 @@ class BigRock(Rock):
         
         #only bigrocks get an initial velocity
         self.velocity = Velocity.velocity_from_speed_angle(BigRock.BIG_ROCK_SPEED, self.angle) 
+        self.points = BigRock.BIG_ROCK_POINTS
         #everything else should be in Rock
         
         

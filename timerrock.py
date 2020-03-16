@@ -8,6 +8,7 @@ import arcade
 from velocity import Velocity
 import constants
 from point import Point
+from bullet import Bullet
 from rock import Rock
 
 class TimerRock(Rock):
@@ -19,7 +20,7 @@ class TimerRock(Rock):
         self.texture = None
         self.radius = 0
         self.spin = 0
-        self.frames = frames
+        self.life = frames
         
     def split(self):
         if (constants.DEBUG):
@@ -27,10 +28,16 @@ class TimerRock(Rock):
         return set()
     
     def advance(self):
-        self.frames -= 1
-        if self.frames < 1:
+        self.life -= 1
+        if self.life < 1:
             self.alive = False
     
     def draw(self):
         pass    
     
+class TimerBullet(TimerRock, Bullet):
+    def __init__(self):
+        super().__init__(TimerRock.TIMER_ROCK_DEFAULT_FRAMES * 2)
+        self._damage = 0
+        self.angle = 0
+        

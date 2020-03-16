@@ -22,6 +22,7 @@ from bigrock import BigRock
 from smallrock import SmallRock
 from alien import Alien
 from timerrock import TimerRock
+from limited_velocity import LimitedVelocity
 
 
 # These are Global constants to use throughout the game
@@ -65,6 +66,7 @@ class Game(arcade.Window):
 
     You are welcome to modify anything in this class.
     """
+    SCORE_COLOR = arcade.color.ALLOY_ORANGE
 
     def __init__(self, width, height):
         """
@@ -76,6 +78,7 @@ class Game(arcade.Window):
         arcade.set_background_color(arcade.color.SMOKY_BLACK)
         self.reset = True
         self.held_keys = set()
+        self.respawn_timer = None
         
         self.ship = Ship()
         # TODO: Consider turning these into python sets rather than lists.
@@ -105,6 +108,20 @@ class Game(arcade.Window):
             bullet.draw()
             
         self.ship.draw()
+        self.draw_score()
+
+    def draw_score(self):
+        """
+        Puts the current score on the screen.
+        Based on Br. Burton's method in Skeet.
+        """
+        score_text = "Score: {}".format(self.score)
+        start_x = 10
+        start_y = constants.SCREEN_HEIGHT - 20
+        # if score is too low to fire super bullets, indicate.
+        arcade.draw_text(score_text, start_x=start_x, start_y=start_y, 
+                    font_size=12, color=Game.SCORE_COLOR)
+
 
     def update(self, delta_time):
         """
@@ -123,6 +140,10 @@ class Game(arcade.Window):
                 self.ship = Ship()
             #time.sleep(1)        
             
+        #######
+        # Special events happen here: i.e., respawning, aliens appearing, 
+        # level up...
+        ######    
         if (not self.reset):
             if len(self.rocks) < 1:
                 self.reset = True
@@ -136,6 +157,29 @@ class Game(arcade.Window):
                     # TODO: move away from this cludge!
                     if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
                     self.rocks.append(Alien())
+            elif (not self.ship.alive):
+                # consider putting most if not all of this functionality
+                # within SHIP. It would make more sense.
+                if self.respawn_timer is None:
+                    if self.ship.lives > 0:
+                        self.ship.lives -= 1
+                        self.held_keys.clear()
+                        self.ship.velocity = LimitedVelocity()
+                        self.ship.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
+                        self.respawn_timer = 90
+                else:
+                    if self.respawn_timer > 0:
+                        self.respawn_timer -= 1
+                    else:
+                        respawn_flag = True
+                        for rock in self.rocks:
+                            if(self.ship.is_near(rock)):
+                                respawn_flag = False
+                                self.respawn_timer = 15
+                                break
+                        if(respawn_flag):
+                            self.ship.alive = True
+                            self.respawn_timer = None
 
         self.check_keys()
         self._advance_flyers(self.rocks)
@@ -154,22 +198,23 @@ class Game(arcade.Window):
         This function checks for keys that are being held down.
         You will need to put your own method calls in here.
         """
-        if arcade.key.LEFT in self.held_keys:
-            self.ship.turn_left()
+        if (self.ship.alive):
+            if arcade.key.LEFT in self.held_keys:
+                self.ship.turn_left()
 
-        if arcade.key.RIGHT in self.held_keys:
-            self.ship.turn_right()
+            if arcade.key.RIGHT in self.held_keys:
+                self.ship.turn_right()
 
-        if arcade.key.UP in self.held_keys:
-            self.ship.thrust()
+            if arcade.key.UP in self.held_keys:
+                self.ship.thrust()
 
-        if arcade.key.DOWN in self.held_keys:
-            pass
+            if arcade.key.DOWN in self.held_keys:
+                pass
 
-        # Machine gun mode... TODO: come up with a reasonable machine gun
-        #                           implementation.
-        if arcade.key.SPACE in self.held_keys:
-            self.bullets.append(self.ship.fire())
+            # Machine gun mode... TODO: come up with a reasonable machine gun
+            #                           implementation.
+            if arcade.key.SPACE in self.held_keys :
+                self.bullets.append(self.ship.fire())
 
 
     def on_key_press(self, key: int, modifiers: int):
@@ -211,24 +256,36 @@ class Game(arcade.Window):
                     if (constants.DEBUG): 
                         print(f'debug: game._check_flyer_collisions: {bullet}')
                     temp_rocks = rock.split() 
+                    if(rock.alive):
+                        self.score += rock.points
+                        if (constants.DEBUG): 
+                                print(f'\n\ndebug: game._check_flyer_collisions: score is now {self.score} after adding {rock.points}')
+                    
                     for tr in temp_rocks:
                         new_rocks.add(tr)
                         if (constants.DEBUG): 
                             print(f'\n\ndebug: game._check_flyer_collisions: added {tr} to\nnew_rocks:{new_rocks}')
-                                            
                     rock.alive = False
                     bullet.alive = False
                     #Both rock/bullet will be removed
                     # during zombie check.                    
-                    continue #break
-                    # why continue and not break? break would stop all bullets
-                    # from being processed while continue just stops this 
+                    break;  #break
+                    # why break and not continue? break stops all bullets for this dead rock
+                    # continue just stops this 
                     # iteration.
                     
-            if rock.is_near(self.ship):
+            if self.ship.alive and rock.is_near(self.ship):
                 if (constants.DEBUG):
-                    print(f'debug: game._check_flyer_collisions: {self.ship}')
+                    print(f'\n\ndebug: game._check_flyer_collisions: SHIP HAS BEEN HIT {self.ship}\n\n')
                     print(f'debug: game._check_flyer_collisions: {rock}')
+                # death sequence?  # work this out later. For now just dissapear.                              
+                temp_rocks = rock.split()                 
+                self.score += rock.points
+                for tr in temp_rocks:
+                    new_rocks.add(tr)
+                rock.alive = False
+                self.ship.alive = False
+                break;
             if isinstance(rock, Alien):
                 # chance to fire a bullet at the ship
                 if random.random() * Alien.FIRE_CHANCE < 1:
@@ -259,13 +316,11 @@ class Game(arcade.Window):
                     aBullet = AlienBullet(p, angle, v)
                     if(constants.DEBUG): print('_check_flyer_col: new alien bullet:', aBullet)
                     new_rocks.add(aBullet)
-                    
-                
-                #self.ship.alive = False
         # now add new_rocks set to the mix:
         if len(new_rocks) > 0 : 
-            for r in new_rocks: # when self.rocks becomes a set, this will change. TODO
-                self.rocks.append(r)
+            # for r in new_rocks: # when self.rocks becomes a set, this will change. TODO
+            #     self.rocks.append(r)
+            self.rocks.extend(new_rocks)
             
     def _check_boundaries(self):
         """
@@ -293,7 +348,6 @@ class Game(arcade.Window):
         for flyer in self.bullets:
             if not flyer.alive:
                 self.bullets.remove(flyer)
-                
     
     def _wrap_flyer(self, flyer):
         """

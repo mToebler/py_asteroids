@@ -13,3 +13,6 @@ PATH_IMAGES = 'images/'
 
 DEBUG = False
 # DEBUG = True
+SAFE = False
+#SAFE = True
+LIVES = 900

@@ -32,7 +32,7 @@ class Alien(Rock):
     #APPEAR_CHANCE = 750
     APPEAR_CHANCE = 200
     #FIRE_CHANCE = 100
-    FIRE_CHANCE = 10
+    FIRE_CHANCE = 20
     
     def __init__(self):
         super().__init__()        
@@ -46,7 +46,7 @@ class Alien(Rock):
             self.velocity = Velocity(-2.0, 2.0)
                 
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'alien_ship_green.png')
-        self.radius = self.texture.width
+        self.radius = self.texture.width//2 * 0.75
         self.angle = 0
         
     def advance(self):

@@ -19,6 +19,7 @@ class MediumRock(Rock):
     """
     MEDIUM_ROCK_SPIN = -2
     MEDIUM_ROCK_RADIUS = 5
+    MEDIUM_ROCK_POINTS = 10
 
     def __init__(self, startPoint, startVelocity):
         super().__init__(startPoint, startVelocity)        
@@ -31,6 +32,8 @@ class MediumRock(Rock):
         # from the rock it breaks off from
         # TAKES PLACE IN PARENT ABSTRACT CLASS
         # self.velocity = startVelocity
+        self.points = MediumRock.MEDIUM_ROCK_POINTS
+        
         
     def split(self):
         """

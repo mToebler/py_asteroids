@@ -32,6 +32,7 @@ class Rock(Flyer, ABC):
         if startVelocity is not None:
             self.velocity = Velocity(startVelocity.dx, startVelocity.dy)
         self.angle = random.random() * 360
+        self.points = 0
     
     # def draw(self):
     #     """

@@ -2,6 +2,7 @@
 Author: Mark Tobler
 File: ship.py
 """
+from timerrock import TimerBullet
 from velocity import Velocity
 from limited_velocity import LimitedVelocity
 import math
@@ -40,6 +41,7 @@ class Ship(Flyer):
         # just private
         self.__thrust = Ship.SHIP_THRUST_AMOUNT
         self.__thrusting = False
+        self.lives = constants.LIVES
         
     def turn(self, angle):
         """rotates by the given angle"""
@@ -69,11 +71,14 @@ class Ship(Flyer):
         """
         # need to adjust center point to take into account the length or the ship, or barrel
         # of laser cannon. adjacent is going to be the radius for this calculation.
-        radius_adjust = self.texture.height - 1
-        lazer_barrel_end = Point(radius_adjust * Velocity.cosine(self.rotation.angle + 90), 
-                                 radius_adjust * Velocity.sine(self.rotation.angle + 90))
-        lazer_barrel_end = lazer_barrel_end + self.center
-        return Bullet(lazer_barrel_end, self.rotation.display_angle, self.velocity)
+        if(self.alive):
+            radius_adjust = self.texture.height/2 + 2
+            lazer_barrel_end = Point(radius_adjust * Velocity.cosine(self.rotation.angle + 90), 
+                                    radius_adjust * Velocity.sine(self.rotation.angle + 90))
+            lazer_barrel_end = lazer_barrel_end + self.center
+            return Bullet(lazer_barrel_end, self.rotation.display_angle, self.velocity)
+        else:
+            return TimerBullet()
 
     def advance(self):  
         """Moves Ship from one moment to the next."""
@@ -87,14 +92,15 @@ class Ship(Flyer):
         """
         used by extending classes to draw using texture
         """
-        if (self.__thrusting):
-            # testing for a random even based number here
-            if random.random() * 10 % 2 < 1:
-                arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_texture, (self.rotation.angle))
+        if (self.alive):
+            if (self.__thrusting):
+                # testing for a random even based number here
+                if random.random() * 10 % 2 < 1:
+                    arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_texture, (self.rotation.angle))
+                else:
+                    # drawing the alt texture to give the appearance of flickering thrust flames
+                    arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_alt_texture, (self.rotation.angle))
+                self.__thrusting = False
             else:
-                # drawing the alt texture to give the appearance of flickering thrust flames
-                arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_alt_texture, (self.rotation.angle))
-            self.__thrusting = False
-        else:
-            arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.rotation.angle))
-        
+                arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.rotation.angle))
+            

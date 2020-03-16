@@ -13,6 +13,7 @@ class SmallRock(Rock):
     
     SMALL_ROCK_SPIN = 5
     SMALL_ROCK_RADIUS = 2
+    SMALL_ROCK_POINTS = 15
 
     def __init__(self, startPoint, startVelocity):
         super().__init__(startPoint, startVelocity)
@@ -24,6 +25,7 @@ class SmallRock(Rock):
         # from the rock it breaks off from
         # TAKES PLACE IN PARENT ABSTRACT CLASS
         # self.velocity = startVelocity
+        self.points = SmallRock.SMALL_ROCK_POINTS
 
     def split(self):
         if (constants.DEBUG):
