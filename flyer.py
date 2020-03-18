@@ -3,7 +3,7 @@ Author: Mark Tobler
 File: flyer.py
 """
 import arcade 
-from abc import ABC
+from abc import ABC, abstractmethod
 import constants
 from point import Point
 from velocity import Velocity
@@ -45,6 +45,8 @@ class Flyer(ABC):
         # all flyers have a color. Here to back up any that don't specify
         self.color = arcade.color.PINK
         self.angle = 0
+        # loading an empty image for this. Re-evaluate if performance hit.
+        self.texture = None # arcade.load_texture(constants.PATH_IMAGES + 'stub.png')
         
     def advance(self):
         """Override if more complex than simple move by velocity"""
@@ -52,8 +54,9 @@ class Flyer(ABC):
 
     def draw(self):
         """
-        Override this draw method unless child object is filled 
-        circle. See Flyer notes above.
+        Implementing classes should override this draw method unless 
+        they are more than a texture being drawn on screen.
+        See Flyer notes above.
         """
         # likely will be overridden to appropriate shapes
         # Bullet and target use this as is. Not making abstractmethod.

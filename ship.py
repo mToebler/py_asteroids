@@ -25,10 +25,10 @@ class Ship(Flyer):
     SHIP_TURN_AMOUNT = 3
     SHIP_RADIUS = 30
     SHIP_THRUST_AMOUNT = 0.25
-    #SHIELD_LIST = [arcade.color.ELECTRIC_LIME, arcade.color.ELECTRIC_YELLOW, arcade.color.ELECTRIC_CRIMSON, arcade.color.ELECTRIC_LAVENDER, arcade.color.ELECTRIC_CYAN]
     #SHIELD_LIST = [arcade.color.PINK, arcade.color.PINK_LACE, arcade.color.PINK_LAVENDER, arcade.color.PINK_PEARL, arcade.color.PINK_SHERBET]
     SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.ALICE_BLUE, arcade.color.LIGHT_GRAY, arcade.color.PALE_SILVER, arcade.color.LAVENDER_GRAY]
     #SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.LAVENDER, arcade.color.LAVENDER_BLUE, arcade.color.LAVENDER_BLUSH, arcade.color.LAVENDER_GRAY]
+    #SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.LAVENDER, arcade.color.DIAMOND, arcade.color.LAVENDER_BLUSH, arcade.color.LAVENDER_GRAY]
     #SHIELD_LIST = [arcade.color.LIGHT_CYAN, arcade.color.DIAMOND, arcade.color.PALE_SILVER, arcade.color.ALICE_BLUE, arcade.color.CELESTE]
 
     def __init__(self):
@@ -43,8 +43,10 @@ class Ship(Flyer):
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
         self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
         self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2-0.png')
+        self.shielding_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_shields2.png')
         self.sprite.textures.append(self.thrusting_texture) # this is texture 1
         self.sprite.textures.append(self.thrusting_alt_texture) # this is texture 2
+        self.sprite.textures.append(self.shielding_texture) # this is texture 3
         self.sprite.set_texture(0) # the original image
         self.radius = self.sprite.height / 2  * 0.9 #Ship.SHIP_RADIUS
         self.lives = constants.LIVES
@@ -104,21 +106,26 @@ class Ship(Flyer):
             if (rock is None):
                 damage = 1
             elif isinstance(rock, Rock):
-                damage = rock.damage                
+                damage = rock.damage
+                # velocity changes on impact. Add velocities together
+                v = rock.velocity
+                if rock.spin != 0 :
+                    v.dx *= 1/(abs(rock.spin) * 1.5)
+                    v.dy *=  1/(abs(rock.spin) * 1.5)
+                    v = self.velocity + v
+                    self.velocity.set_velocity(v.dx/2, v.dy/2)
             else :
                 damage = 1 # maybe this could be added to initial if
         else:
             self.alive = False
         self.lives -= damage; self.lives = 0 if self.lives < 0 else self.lives
         self._iteration_hits += damage
-
+        
     def advance(self):  
         """Moves Ship from one moment to the next."""
-        # with ship, there's velocity as well as rotational veloctiy 
-        # that needs to be considered. 
         self.center.move_by(self.velocity)
         # implementing this at a later date
-        self.rotation.advance()
+        #self.rotation.advance()
         self.sprite.center_x = self.center.x
         self.sprite.center_y = self.center.y
         self.sprite.angle = self.rotation.angle 
@@ -142,6 +149,8 @@ class Ship(Flyer):
                 self.sprite.set_texture(0)
             self.sprite.draw()
             if (self.shielding or self._iteration_hits > 0):
+                self.sprite.set_texture(3)
+                self.sprite.draw()
                 arcade.draw_ellipse_outline(self.center.x, self.center.y, 
                             (self.sprite.width * 1.15), 
                             (self.sprite.height * 1.15), 

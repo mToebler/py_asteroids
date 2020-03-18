@@ -66,7 +66,9 @@ class Game(arcade.Window):
 
     You are welcome to modify anything in this class.
     """
-    SCORE_COLOR = arcade.color.ALLOY_ORANGE
+    SCORE_COLOR = arcade.color.ANTI_FLASH_WHITE
+    COLOR_LIST_LIGHT = [arcade.color.LAVENDER_MIST, arcade.color.ALICE_BLUE, arcade.color.LIGHT_GRAY, arcade.color.PALE_SILVER, arcade.color.LAVENDER_GRAY]
+    COLOR_LIST = [arcade.color.ELECTRIC_LIME, arcade.color.ELECTRIC_YELLOW, arcade.color.ELECTRIC_CRIMSON, arcade.color.ELECTRIC_LAVENDER, arcade.color.ELECTRIC_CYAN]
 
     def __init__(self, width, height):
         """
@@ -75,18 +77,20 @@ class Game(arcade.Window):
         :param height: Screen height
         """
         super().__init__(width, height)
-        arcade.set_background_color(arcade.color.SMOKY_BLACK)
+        arcade.set_background_color(arcade.color.BLACK) # smokey black is too flat for space.
         self.reset = True
         self.held_keys = set()
-        self.respawn_timer = None
+        self.respawn_timer = None# 3 state logic here. timer if the ship respawns 
+        self.levelup_timer = 90  # time between levels
+        self.level = 1
         self.update_rate = 45    # handles speed of game.
         
         self.ship = Ship()
-        # TODO: Consider turning these into python sets rather than lists.
-        #       Removing elements from the middle would be faster.
-        self.rocks = []
+        # using sets not lists
+        self.rocks = set()
         # need to setup the rocks.
-        self.bullets = []
+        self.bullets = {}
+        self.bullet_regulator = 1
         self.score = 0    
 
 
@@ -107,10 +111,10 @@ class Game(arcade.Window):
             
         self.ship.draw()
         if not self.ship.alive:
-            self.draw_end()
-        self.draw_score()
+            self.draw_level_status()
+        self.draw_info()
 
-    def draw_score(self):
+    def draw_info(self):
         """
         Puts the current score on the screen.
         Based on Br. Burton's method in Skeet.
@@ -118,19 +122,28 @@ class Game(arcade.Window):
         score_text = f"Score: {self.score}\nShields: {self.ship.lives}"
         start_x = 10
         start_y = constants.SCREEN_HEIGHT - 40        
+        if self.ship is not None and self.ship.lives / constants.LIVES < 0.5:
+            info_color = Game.COLOR_LIST[1]
+            if self.ship.lives / constants.LIVES < 0.25:
+                info_color = Game.COLOR_LIST[2]
+        else:
+            info_color = Game.SCORE_COLOR
         arcade.draw_text(score_text, start_x=start_x, start_y=start_y, 
-                    font_size=12, color=Game.SCORE_COLOR)
-
-    def draw_end(self):
-        """Puts up game over message"""
-        message_text = 'Game\nOver'
+                    font_size=12, color=info_color)
+        if self.levelup_timer > 0:
+            self.levelup_timer -= 1            
+            self.draw_level_status(text=f'Level\n{self.level}', use_light=False)
+            
+    def draw_level_status(self, text='Game\nOver', use_light=True):
+        if(use_light): colors = Game.COLOR_LIST_LIGHT
+        else: colors = Game.COLOR_LIST
         start_x = constants.SCREEN_WIDTH/2 - 40
-        start_y = constants.SCREEN_HEIGHT/2 - 30
-        color = int(constants.HEAP % len(Ship.SHIELD_LIST))
-        color_2 = int(constants.HEAP * 7 % len(Ship.SHIELD_LIST))
-        arcade.draw_text(message_text, start_x=start_x, start_y=start_y, 
-                    font_size=20, color=Ship.SHIELD_LIST[color], align='center')
-        arcade.draw_rectangle_outline(start_x + 32, start_y + 28, 100, 60, Ship.SHIELD_LIST[color_2])
+        start_y = constants.SCREEN_HEIGHT * 3 / 5
+        color = int(constants.HEAP % len(colors))
+        color_2 = int(constants.HEAP * 7 % len(colors))
+        arcade.draw_text(text, start_x=start_x, start_y=start_y, 
+                    font_size=20, color=colors[color], align='center')
+        arcade.draw_rectangle_outline(start_x + 32, start_y + 28, 100, 60, colors[color_2])
         constants.HEAP += .05
         
     def update(self, delta_time):
@@ -138,7 +151,7 @@ class Game(arcade.Window):
         Update each object in the game.
         :param delta_time: tells us how much time has actually elapsed
         """
-        if (self.reset and len(self.rocks) < 1):
+        if (self.reset and len(self.rocks) < 1 and self.levelup_timer < 1):
             self.set_reset()
             
         if (not self.reset):
@@ -168,12 +181,15 @@ class Game(arcade.Window):
                 self.ship.thrust()
 
             if arcade.key.DOWN in self.held_keys:
+                # warp?
                 pass
 
             # Machine gun mode... TODO: come up with a reasonable machine gun
             #                           implementation.
             if arcade.key.SPACE in self.held_keys :
-                self.bullets.append(self.ship.fire())
+                if self.bullet_regulator > 0:
+                    self.bullets.add(self.ship.fire())
+                self.bullet_regulator *= -1
                 
     def on_key_press(self, key: int, modifiers: int):
         """
@@ -183,8 +199,8 @@ class Game(arcade.Window):
         if self.ship.alive:
             self.held_keys.add(key)
 
-            if key == arcade.key.SPACE and arcade.key.SPACE not in self.held_keys:
-                self.bullets.append(self.ship.fire())
+            #if key == arcade.key.SPACE and arcade.key.SPACE not in self.held_keys:
+            #self.bullets.add(self.ship.fire())
 
     def on_key_release(self, key: int, modifiers: int):
         """
@@ -201,18 +217,20 @@ class Game(arcade.Window):
         """Handles the extras. Separate method keeps update() clean. """
         if len(self.rocks) < 1:
             self.reset = True
+            self.level += 1
             self.bullets.clear()
             if(constants.DEBUG): print('Game: Resetting! Adding TimerRock')
             #!!! increase starting rock count
             constants.INITIAL_ROCK_COUNT += 1
             # OR
-            self.update_rate += 15
+            self.update_rate += 10
             self.set_update_rate(float(1/self.update_rate))
-            self.rocks.append(TimerRock())
+            self.rocks.add(TimerRock())
+            self.levelup_timer = 90
         elif (0 < len(self.rocks) < 3):
             if random.random() * Alien.APPEAR_CHANCE < 1:
                 if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
-                self.rocks.append(Alien())
+                self.rocks.add(Alien())
         elif (not self.ship.alive):
             # consider putting most if not all of this functionality
             # within SHIP. It would make more sense.
@@ -251,7 +269,7 @@ class Game(arcade.Window):
                     rock = BigRock(point)
                     if not rock.is_near(self.ship):
                         rerock = False
-            self.rocks.append(rock)
+            self.rocks.add(rock)
         if self.ship is None:
             self.ship = Ship()           
         
@@ -264,22 +282,16 @@ class Game(arcade.Window):
         """ check for collisions amongst the rocks for bullets, and ship"""
         # create a temp collection to hold the created rocks during this process.
         new_rocks = set()
-        # hmmm... is there anyother way than to iterate through the lists
-        # and compare one at a time?
         for rock in self.rocks:
-            # these both have flyer's center points which has +, - and 
-            # comparison ability
             for bullet in self.bullets:
                 temp_rocks = None
-                if (rock.is_near(bullet)):                    
+                if (rock.is_near(bullet)):
+                    self.score += rock.points
                     if (constants.DEBUG): 
                         print(f'debug: game._check_flyer_collisions: {bullet}')
                     temp_rocks = rock.split() 
-                    if(rock.alive):
-                        self.score += rock.points
-                        if (constants.DEBUG): 
-                                print(f'\n\ndebug: game._check_flyer_collisions: score is now {self.score} after adding {rock.points}')
-                    
+                    # if(rock.alive):
+                    #     self.score += rock.points                    
                     for tr in temp_rocks:
                         new_rocks.add(tr)
                         if (constants.DEBUG): 
@@ -297,7 +309,6 @@ class Game(arcade.Window):
                 if (constants.DEBUG):
                     print(f'\n\ndebug: game._check_flyer_collisions: SHIP HAS BEEN HIT {self.ship}\n\n')
                     print(f'debug: game._check_flyer_collisions: {rock}')
-                # death sequence?  # work this out later. For now just dissapear.                              
                 # this will invoke shields if appropriate
                 self.ship.hit(rock) #self.ship.alive = False
                 temp_rocks = rock.split()                 
@@ -331,37 +342,45 @@ class Game(arcade.Window):
                     new_rocks.add(aBullet)
         # now add new_rocks set to the mix:
         if len(new_rocks) > 0 : 
-            # for r in new_rocks: # when self.rocks becomes a set, this will change. TODO
-            #     self.rocks.append(r)
-            self.rocks.extend(new_rocks)
+            self.rocks.update(new_rocks)
             
     def _check_window_boundaries(self):
         """
-        Checks for and adjusts flyers center if affected by screen limits
+        Checks for and adjusts flyers center if affected by window limits
         """
-        edgePoint = Point(SCREEN_WIDTH,SCREEN_HEIGHT)
+        #edgePoint = Point(SCREEN_WIDTH,SCREEN_HEIGHT)
         # the ship
         self._wrap_flyer(self.ship)
-        #TODO: the radius doesn't seem right. FIX
         # the rocks
         for flyer in self.rocks:
-            # if flyer.center- flyer.radius > edgePoint:
-            #     self._wrap_flyer(flyer)
-            # elif flyer.center+ flyer.radius < Point():
             self._wrap_flyer(flyer)
         # the bullets
         for flyer in self.bullets:
             self._wrap_flyer(flyer)
     
     def _check_zombies(self):
-        for flyer in self.rocks:
-            if not flyer.alive:
-                self.rocks.remove(flyer)
+        # Tried two different approaches. Switching out the sets 
+        # seemed faster than removing the elements.
+        # 1. Switching out the set
+        #new_rocks = set()
+        # tying set comprehension here
+        self.rocks = {rock for rock in self.rocks if rock.alive}
+        # for flyer in self.rocks:
+        #     if flyer.alive:
+        #         new_rocks.add(flyer)
+        #         #self.rocks.discard(flyer)
+        # self.rocks = new_rocks
+        # {rock for rock in self.rocks if rock.alive}
+        # # 2, Removing an element from the set.
+        self.bullets = {bullet for bullet in self.bullets if bullet.alive}
+        # try:
+            
+        #     for flyer in self.bullets:
+        #         if not flyer.alive:
+        #             self.bullets.remove(flyer)
+        # except KeyError as e:
+        #     print('Game._check_zombies: caught KeyError removing a bullet. Moving on.', e)
         
-        for flyer in self.bullets:
-            if not flyer.alive:
-                self.bullets.remove(flyer)
-    
     def _wrap_flyer(self, flyer):
         """
         manipulates a flyer's center point to wrap around the arcade window
