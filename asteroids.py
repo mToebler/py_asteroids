@@ -79,6 +79,7 @@ class Game(arcade.Window):
         self.reset = True
         self.held_keys = set()
         self.respawn_timer = None
+        self.update_rate = 45    # handles speed of game.
         
         self.ship = Ship()
         # TODO: Consider turning these into python sets rather than lists.
@@ -115,9 +116,9 @@ class Game(arcade.Window):
         Puts the current score on the screen.
         Based on Br. Burton's method in Skeet.
         """
-        score_text = "Score: {}".format(self.score)
+        score_text = f"Score: {self.score}\nShields: {self.ship.lives}"
         start_x = 10
-        start_y = constants.SCREEN_HEIGHT - 20
+        start_y = constants.SCREEN_HEIGHT - 40
         # if score is too low to fire super bullets, indicate.
         arcade.draw_text(score_text, start_x=start_x, start_y=start_y, 
                     font_size=12, color=Game.SCORE_COLOR)
@@ -129,68 +130,17 @@ class Game(arcade.Window):
         :param delta_time: tells us how much time has actually elapsed
         """
         if (self.reset and len(self.rocks) < 1):
-            self.reset = False
-            random.seed()
-            #generate rocks
-            for r in range(constants.INITIAL_ROCK_COUNT):
-                point = Point((random.random() * constants.SCREEN_WIDTH), 
-                            (random.random() * constants.SCREEN_HEIGHT))
-                self.rocks.append(BigRock(point))
-            if self.ship is None:
-                self.ship = Ship()
-            #time.sleep(1)        
+            self.set_reset()
             
-        #######
-        # Special events happen here: i.e., respawning, aliens appearing, 
-        # level up...
-        ######    
         if (not self.reset):
-            if len(self.rocks) < 1:
-                self.reset = True
-                self.bullets.clear()
-                if(constants.DEBUG): print('Game: Resetting! Adding TimerRock')
-                #!!! increase starting rock count
-                constants.INITIAL_ROCK_COUNT += 1
-                self.rocks.append(TimerRock())
-            elif (0 < len(self.rocks) < 5):
-                if random.random() * Alien.APPEAR_CHANCE < 1:
-                    # TODO: move away from this cludge!
-                    if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
-                    self.rocks.append(Alien())
-            elif (not self.ship.alive):
-                # consider putting most if not all of this functionality
-                # within SHIP. It would make more sense.
-                if self.respawn_timer is None:
-                    if self.ship.lives > 0:
-                        self.ship.lives -= 1
-                        self.held_keys.clear()
-                        self.ship.velocity = LimitedVelocity()
-                        self.ship.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
-                        self.respawn_timer = 90
-                else:
-                    if self.respawn_timer > 0:
-                        self.respawn_timer -= 1
-                    else:
-                        respawn_flag = True
-                        for rock in self.rocks:
-                            if(self.ship.is_near(rock)):
-                                respawn_flag = False
-                                self.respawn_timer = 15
-                                break
-                        if(respawn_flag):
-                            self.ship.alive = True
-                            self.respawn_timer = None
+            self.process_extras()
 
         self.check_keys()
         self._advance_flyers(self.rocks)
         self._advance_flyers(self.bullets)
         self.ship.advance()
-        self._check_boundaries()
+        self._check_window_boundaries()
         self._check_zombies()
-        
-        # TODO: Tell everything to advance or move forward one step in time
-
-        # TODO: Check for collisions
         self._check_flyer_collisions()
 
     def check_keys(self):
@@ -215,8 +165,68 @@ class Game(arcade.Window):
             #                           implementation.
             if arcade.key.SPACE in self.held_keys :
                 self.bullets.append(self.ship.fire())
-
-
+     #######
+    # Special events happen here: i.e., respawning, aliens appearing, 
+    # level up...
+    ######           
+    def process_extras(self):
+        """Handles the extras. Separate method keeps update() clean. """
+        if len(self.rocks) < 1:
+            self.reset = True
+            self.bullets.clear()
+            if(constants.DEBUG): print('Game: Resetting! Adding TimerRock')
+            #!!! increase starting rock count
+            constants.INITIAL_ROCK_COUNT += 1
+            # OR
+            self.update_rate += 15
+            self.set_update_rate(float(1/self.update_rate))
+            self.rocks.append(TimerRock())
+        elif (0 < len(self.rocks) < 3):
+            if random.random() * Alien.APPEAR_CHANCE < 1:
+                if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
+                self.rocks.append(Alien())
+        elif (not self.ship.alive):
+            # consider putting most if not all of this functionality
+            # within SHIP. It would make more sense.
+            if self.respawn_timer is None:
+                if self.ship.lives > 0:
+                    self.ship.lives -= 1
+                    self.held_keys.clear()
+                    self.ship.velocity = LimitedVelocity()
+                    self.ship.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
+                    self.respawn_timer = 90
+            else:
+                if self.respawn_timer > 0:
+                    self.respawn_timer -= 1
+                else:
+                    respawn_flag = True
+                    for rock in self.rocks:
+                        if(self.ship.is_near(rock)):
+                            respawn_flag = False
+                            self.respawn_timer = 15
+                            break
+                    if(respawn_flag):
+                        self.ship.alive = True
+                        self.respawn_timer = None
+                        
+    def set_reset(self):
+        """Sets up asteroid rocks and ship, separate method keeps update() clean."""
+        self.reset = False
+        random.seed()
+        #generate rocks 
+        for r in range(constants.INITIAL_ROCK_COUNT):
+            if self.ship is not None:
+                rerock = True            
+                while (rerock):
+                    point = Point((random.random() * constants.SCREEN_WIDTH), 
+                            (random.random() * constants.SCREEN_HEIGHT))
+                    rock = BigRock(point)
+                    if not rock.is_near(self.ship):
+                        rerock = False
+            self.rocks.append(rock)
+        if self.ship is None:
+            self.ship = Ship()           
+        
     def on_key_press(self, key: int, modifiers: int):
         """
         Puts the current key in the set of keys that are being held.
@@ -279,12 +289,13 @@ class Game(arcade.Window):
                     print(f'\n\ndebug: game._check_flyer_collisions: SHIP HAS BEEN HIT {self.ship}\n\n')
                     print(f'debug: game._check_flyer_collisions: {rock}')
                 # death sequence?  # work this out later. For now just dissapear.                              
+                # this will invoke shields if appropriate
+                self.ship.hit(rock) #self.ship.alive = False
                 temp_rocks = rock.split()                 
                 self.score += rock.points
                 for tr in temp_rocks:
                     new_rocks.add(tr)
-                rock.alive = False
-                self.ship.alive = False
+                rock.alive = False        
                 break;
             if isinstance(rock, Alien):
                 # chance to fire a bullet at the ship
@@ -322,7 +333,7 @@ class Game(arcade.Window):
             #     self.rocks.append(r)
             self.rocks.extend(new_rocks)
             
-    def _check_boundaries(self):
+    def _check_window_boundaries(self):
         """
         Checks for and adjusts flyers center if affected by screen limits
         """
@@ -375,10 +386,8 @@ class Game(arcade.Window):
             flyer.center.y -= SCREEN_HEIGHT + 2*flyer.radius
         elif flyer.center.y + flyer.radius < 0:
             flyer.center.y += SCREEN_HEIGHT + 2*flyer.radius
-
             
             
-        
         
 # Creates the game and starts it going
 window = Game(constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT)

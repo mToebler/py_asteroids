@@ -33,6 +33,7 @@ class Rock(Flyer, ABC):
             self.velocity = Velocity(startVelocity.dx, startVelocity.dy)
         self.angle = random.random() * 360
         self.points = 0
+        self._damage = 10
     
     # def draw(self):
     #     """
@@ -40,7 +41,11 @@ class Rock(Flyer, ABC):
     #     """
     #     arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, self.angle)
         
-        
+    @property
+    def damage(self):
+        """No setter for damage"""
+        return self._damage
+    
     def advance(self):
         super().advance()
         self.angle += self.spin

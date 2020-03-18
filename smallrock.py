@@ -26,6 +26,7 @@ class SmallRock(Rock):
         # TAKES PLACE IN PARENT ABSTRACT CLASS
         # self.velocity = startVelocity
         self.points = SmallRock.SMALL_ROCK_POINTS
+        self._damage = 2
 
     def split(self):
         if (constants.DEBUG):

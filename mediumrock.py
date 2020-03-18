@@ -33,6 +33,7 @@ class MediumRock(Rock):
         # TAKES PLACE IN PARENT ABSTRACT CLASS
         # self.velocity = startVelocity
         self.points = MediumRock.MEDIUM_ROCK_POINTS
+        self._damage = 3
         
         
     def split(self):

@@ -73,5 +73,24 @@ class Velocity:
         """
         # converting into radians and returning sine value
         return math.sin(degrees * math.pi/180)
+    
+    @classmethod
+    def __deepcopy__(cls, velocity):
+        lhs = Velocity(velocity.dx, velocity.dy)
+        return lhs
+        
         
 # this is it for now. May use some of the dunder methods for comparing and adding velocities later.
+
+#testing
+# v = Velocity(1.1, 1.2)
+# v1 = Velocity.__deepcopy__(v)
+# assert(v is not v1)
+# # print(v, '\n\n', v1)
+# # print('equal?', v is v1, v == v1)
+# # print(v is v)
+# v.dx += 2
+# print(v, '\n\n', v1)
+# assert(v is not v1)
+# # print('equal?', v is v1, v == v1)
+# assert(v is not v)

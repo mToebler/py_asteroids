@@ -13,6 +13,7 @@ from flyer import Flyer
 from angularvelocity import AngularVelocity
 from point import Point
 from bullet import Bullet
+from rock import Rock
 
 class Ship(Flyer):
     """
@@ -24,6 +25,7 @@ class Ship(Flyer):
     SHIP_TURN_AMOUNT = 3
     SHIP_RADIUS = 30
     SHIP_THRUST_AMOUNT = 0.25
+    SHIELD_LIST = [arcade.color.ELECTRIC_LIME, arcade.color.ELECTRIC_YELLOW, arcade.color.ELECTRIC_CRIMSON, arcade.color.ELECTRIC_LAVENDER, arcade.color.ELECTRIC_CYAN]
 
     def __init__(self):
         super().__init__()
@@ -31,18 +33,26 @@ class Ship(Flyer):
         self.rotation = AngularVelocity(1)
         # overriding Flyer to use LimitedVelocity
         self.velocity = LimitedVelocity()
-        # three textures for emulating flames. 
-        # TODO: Consider upgrading the ship to a sprite which can hold 
-        # different textures in an array. May be more efficient in memory ? 
+        # Using a sprite to reduce the size of the ship. Adding two 
+        # textures for thrusting effects. 
+        self.sprite = arcade.Sprite(constants.PATH_IMAGES + 'playerShip1_orange.png', 0.65)
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
         self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
         self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2-0.png')
-        self.radius = Ship.SHIP_RADIUS
+        self.sprite.textures.append(self.thrusting_texture) # this is texture 1
+        self.sprite.textures.append(self.thrusting_alt_texture) # this is texture 2
+        self.sprite.set_texture(0) # the original image
+        self.radius = self.sprite.height / 2  * 0.9 #Ship.SHIP_RADIUS
+        self.lives = constants.LIVES
+        self.shielding = False
+        
+        #protected
+        self._iteration_hits = 0
+        
         # just private
         self.__thrust = Ship.SHIP_THRUST_AMOUNT
         self.__thrusting = False
-        self.lives = constants.LIVES
-        
+
     def turn(self, angle):
         """rotates by the given angle"""
         #AngularVelocity will handle rotations
@@ -79,6 +89,24 @@ class Ship(Flyer):
             return Bullet(lazer_barrel_end, self.rotation.display_angle, self.velocity)
         else:
             return TimerBullet()
+    
+    def hit(self, rock=None):
+        """
+        Records the number of hits and activates shields between draws.
+        """
+        damage = 0
+        if self.lives > 0:
+            self.shielding = True            
+            if (rock is None):
+                damage = 1
+            elif isinstance(rock, Rock):
+                damage = rock.damage                
+            else :
+                damage = 1 # maybe this could be added to initial if
+        else:
+            self.alive = False
+        self.lives -= damage; self.lives = 0 if self.lives < 0 else self.lives
+        self._iteration_hits += damage
 
     def advance(self):  
         """Moves Ship from one moment to the next."""
@@ -87,20 +115,32 @@ class Ship(Flyer):
         self.center.move_by(self.velocity)
         # implementing this at a later date
         self.rotation.advance()
+        self.sprite.center_x = self.center.x
+        self.sprite.center_y = self.center.y
+        self.sprite.angle = self.rotation.angle 
 
     def draw(self):
         """
-        used by extending classes to draw using texture
+        Draws the ship (a sprite) using 1 of 3 textures depending on Game state.
         """
         if (self.alive):
             if (self.__thrusting):
                 # testing for a random even based number here
                 if random.random() * 10 % 2 < 1:
-                    arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_texture, (self.rotation.angle))
+                    self.sprite.set_texture(1)
+                    #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_texture, (self.rotation.angle))
                 else:
+                    self.sprite.set_texture(2)
                     # drawing the alt texture to give the appearance of flickering thrust flames
-                    arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_alt_texture, (self.rotation.angle))
+                    #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_alt_texture, (self.rotation.angle))
                 self.__thrusting = False
             else:
-                arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.rotation.angle))
-            
+                self.sprite.set_texture(0)
+                #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.rotation.angle))
+            self.sprite.draw()
+            if (self.shielding or self._iteration_hits > 0):
+                arcade.draw_ellipse_outline(self.center.x, self.center.y, (self.sprite.width * 1.15), (self.sprite.height * 1.15), color=Ship.SHIELD_LIST[self._iteration_hits%len(Ship.SHIELD_LIST)], tilt_angle=self.rotation.angle)
+                if(constants.DEBUG):
+                    print(f'ship.draw.shielding: iteration_hits: {self._iteration_hits} color: {Ship.SHIELD_LIST[self._iteration_hits%len(Ship.SHIELD_LIST)]}')
+                self.shielding = False; self._iteration_hits -= 1
+                

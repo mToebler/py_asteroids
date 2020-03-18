@@ -32,6 +32,7 @@ class BigRock(Rock):
         #only bigrocks get an initial velocity
         self.velocity = Velocity.velocity_from_speed_angle(BigRock.BIG_ROCK_SPEED, self.angle) 
         self.points = BigRock.BIG_ROCK_POINTS
+        self._damage = 5
         #everything else should be in Rock
         
         

@@ -26,12 +26,12 @@ class Bullet(Flyer):
         self.life = Bullet.BULLET_LIFE
         # this velocity assignment is taken from the instructions in the 
         # assignment:
-        #   "Bullets are [sic] should start with the same velocity of the ship 
+        #   "Bullets are should [sic] start with the same velocity of the ship 
         #    (speed and direction) plus 10 pixels per frame in the direction 
         #    the ship is pointed." 
         # Let me know if this is not what you want. It makes sense logically, 
-        # butin cases where the ship is going faster than bulllet speed, the 
-        # bullet appears to have a negative direction than intended. #
+        # but in cases where the ship is going faster than bulllet speed, the 
+        # bullet appears to have a negative direction.#
         self.velocity = inherited_velocity + Velocity.velocity_from_speed_angle(Bullet.BULLET_SPEED, self.angle)
         # old calculation below.
         #self.velocity = Velocity.velocity_from_speed_angle(inherited_velocity.speed + Bullet.BULLET_SPEED, (self.angle)) 
@@ -67,5 +67,4 @@ class Bullet(Flyer):
         if self.life < 1:
             self.alive = False
             
-        
         

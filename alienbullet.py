@@ -26,6 +26,7 @@ class AlienBullet(Bullet, Rock):
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'alien_laser2-0.png')
         self.radius = self.texture.width//2 * 0.75
         self.life = AlienBullet.BULLET_LIFE
+        self._damage = 5
         
     def split(self):
         """

@@ -11,8 +11,8 @@ INITIAL_ROCK_COUNT = 5
 
 PATH_IMAGES = 'images/'
 
-DEBUG = False
-# DEBUG = True
+# DEBUG = False
+DEBUG = True
 SAFE = False
 #SAFE = True
-LIVES = 900
+LIVES = 500
