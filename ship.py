@@ -25,7 +25,11 @@ class Ship(Flyer):
     SHIP_TURN_AMOUNT = 3
     SHIP_RADIUS = 30
     SHIP_THRUST_AMOUNT = 0.25
-    SHIELD_LIST = [arcade.color.ELECTRIC_LIME, arcade.color.ELECTRIC_YELLOW, arcade.color.ELECTRIC_CRIMSON, arcade.color.ELECTRIC_LAVENDER, arcade.color.ELECTRIC_CYAN]
+    #SHIELD_LIST = [arcade.color.ELECTRIC_LIME, arcade.color.ELECTRIC_YELLOW, arcade.color.ELECTRIC_CRIMSON, arcade.color.ELECTRIC_LAVENDER, arcade.color.ELECTRIC_CYAN]
+    #SHIELD_LIST = [arcade.color.PINK, arcade.color.PINK_LACE, arcade.color.PINK_LAVENDER, arcade.color.PINK_PEARL, arcade.color.PINK_SHERBET]
+    SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.ALICE_BLUE, arcade.color.LIGHT_GRAY, arcade.color.PALE_SILVER, arcade.color.LAVENDER_GRAY]
+    #SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.LAVENDER, arcade.color.LAVENDER_BLUE, arcade.color.LAVENDER_BLUSH, arcade.color.LAVENDER_GRAY]
+    #SHIELD_LIST = [arcade.color.LIGHT_CYAN, arcade.color.DIAMOND, arcade.color.PALE_SILVER, arcade.color.ALICE_BLUE, arcade.color.CELESTE]
 
     def __init__(self):
         super().__init__()
@@ -125,21 +129,24 @@ class Ship(Flyer):
         """
         if (self.alive):
             if (self.__thrusting):
-                # testing for a random even based number here
+                # drawing the alt texture to give the appearance of flickering 
+                # thrust flames
+                # testing for a random even-esque number here
                 if random.random() * 10 % 2 < 1:
-                    self.sprite.set_texture(1)
-                    #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_texture, (self.rotation.angle))
-                else:
+                    self.sprite.set_texture(1)                    
+                else:                    
                     self.sprite.set_texture(2)
-                    # drawing the alt texture to give the appearance of flickering thrust flames
-                    #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.thrusting_alt_texture, (self.rotation.angle))
+                    
                 self.__thrusting = False
             else:
                 self.sprite.set_texture(0)
-                #arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, (self.rotation.angle))
             self.sprite.draw()
             if (self.shielding or self._iteration_hits > 0):
-                arcade.draw_ellipse_outline(self.center.x, self.center.y, (self.sprite.width * 1.15), (self.sprite.height * 1.15), color=Ship.SHIELD_LIST[self._iteration_hits%len(Ship.SHIELD_LIST)], tilt_angle=self.rotation.angle)
+                arcade.draw_ellipse_outline(self.center.x, self.center.y, 
+                            (self.sprite.width * 1.15), 
+                            (self.sprite.height * 1.15), 
+                            color=Ship.SHIELD_LIST[self._iteration_hits%len(Ship.SHIELD_LIST)], 
+                            tilt_angle=self.rotation.angle)
                 if(constants.DEBUG):
                     print(f'ship.draw.shielding: iteration_hits: {self._iteration_hits} color: {Ship.SHIELD_LIST[self._iteration_hits%len(Ship.SHIELD_LIST)]}')
                 self.shielding = False; self._iteration_hits -= 1

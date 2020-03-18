@@ -88,9 +88,7 @@ class Game(arcade.Window):
         # need to setup the rocks.
         self.bullets = []
         self.score = 0    
-        # game should keep track of lives, not ship, IMO.
-        # lives it outside of ship's scope.
-        # TODO: declare anything here you need the game class to track
+
 
     def on_draw(self):
         """
@@ -100,7 +98,6 @@ class Game(arcade.Window):
         # clear the screen to begin drawing
         arcade.start_render()
 
-        # TODO: draw each object
         for rock in self.rocks:
 #            print(f'Asteroids: on_draw: drawing {rock}')
             rock.draw()
@@ -109,6 +106,8 @@ class Game(arcade.Window):
             bullet.draw()
             
         self.ship.draw()
+        if not self.ship.alive:
+            self.draw_end()
         self.draw_score()
 
     def draw_score(self):
@@ -118,12 +117,22 @@ class Game(arcade.Window):
         """
         score_text = f"Score: {self.score}\nShields: {self.ship.lives}"
         start_x = 10
-        start_y = constants.SCREEN_HEIGHT - 40
-        # if score is too low to fire super bullets, indicate.
+        start_y = constants.SCREEN_HEIGHT - 40        
         arcade.draw_text(score_text, start_x=start_x, start_y=start_y, 
                     font_size=12, color=Game.SCORE_COLOR)
 
-
+    def draw_end(self):
+        """Puts up game over message"""
+        message_text = 'Game\nOver'
+        start_x = constants.SCREEN_WIDTH/2 - 40
+        start_y = constants.SCREEN_HEIGHT/2 - 30
+        color = int(constants.HEAP % len(Ship.SHIELD_LIST))
+        color_2 = int(constants.HEAP * 7 % len(Ship.SHIELD_LIST))
+        arcade.draw_text(message_text, start_x=start_x, start_y=start_y, 
+                    font_size=20, color=Ship.SHIELD_LIST[color], align='center')
+        arcade.draw_rectangle_outline(start_x + 32, start_y + 28, 100, 60, Ship.SHIELD_LIST[color_2])
+        constants.HEAP += .05
+        
     def update(self, delta_time):
         """
         Update each object in the game.
@@ -165,6 +174,25 @@ class Game(arcade.Window):
             #                           implementation.
             if arcade.key.SPACE in self.held_keys :
                 self.bullets.append(self.ship.fire())
+                
+    def on_key_press(self, key: int, modifiers: int):
+        """
+        Puts the current key in the set of keys that are being held.
+        You will need to add things here to handle firing the bullet.
+        """
+        if self.ship.alive:
+            self.held_keys.add(key)
+
+            if key == arcade.key.SPACE and arcade.key.SPACE not in self.held_keys:
+                self.bullets.append(self.ship.fire())
+
+    def on_key_release(self, key: int, modifiers: int):
+        """
+        Removes the current key from the set of held keys.
+        """
+        if key in self.held_keys:
+            self.held_keys.remove(key)
+                            
      #######
     # Special events happen here: i.e., respawning, aliens appearing, 
     # level up...
@@ -227,25 +255,6 @@ class Game(arcade.Window):
         if self.ship is None:
             self.ship = Ship()           
         
-    def on_key_press(self, key: int, modifiers: int):
-        """
-        Puts the current key in the set of keys that are being held.
-        You will need to add things here to handle firing the bullet.
-        """
-        if self.ship.alive:
-            self.held_keys.add(key)
-
-            if key == arcade.key.SPACE:
-                # TODO: Fire the bullet here!
-                self.bullets.append(self.ship.fire())
-
-    def on_key_release(self, key: int, modifiers: int):
-        """
-        Removes the current key from the set of held keys.
-        """
-        if key in self.held_keys:
-            self.held_keys.remove(key)
-            
     def _advance_flyers(self, flyers):
         for flyer in flyers:
 #            print(f'Asteroid: advancing flyer {flyer}')
@@ -301,16 +310,9 @@ class Game(arcade.Window):
                 # chance to fire a bullet at the ship
                 if random.random() * Alien.FIRE_CHANCE < 1:
                     # as there is no rock.fire(), going to add this funcitonality here.
-                    # need to figure out the angle to feed to alienBullet.
-                    # it will be the difference of the alien & ship's x coordinates 
-                    # over the square root of the difference in both ships x 
-                    # and y coordinates summed and squared  (hypotenuse):
-                    # abs(alien.x - ship.x) / sqrt((alien.x - ship.x)^2 + (alien.y - ship.y)^2) # 
-                    # that will be in radians, so multiply it by 180/pi
                     try:
-                        angle = math.sin((rock.center.x - self.ship.center.x)/math.sqrt(math.pow((rock.center.x - self.ship.center.x),2) + math.pow((rock.center.y - self.ship.center.y),2)))
-                        #angle = math.sin(((rock.center.x - self.ship.center.x) / abs(rock.center.x - self.ship.center.x) ) * abs(rock.center.x - self.ship.center.x)/math.sqrt(math.pow((rock.center.x - self.ship.center.x),2) + math.pow((rock.center.y - self.ship.center.y),2)))
-                        #angle = math.atan()
+                        # alien ships shoot only from the "top" quadrant of their ships.
+                        angle = math.sin((rock.center.x - self.ship.center.x)/math.sqrt((rock.center.x - self.ship.center.x)**2 + (rock.center.y - self.ship.center.y)**2))
                         angle = angle * 180/math.pi
                     except ZeroDivisionError as e:
                         # going to swallow this e, and move on.

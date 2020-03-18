@@ -6,13 +6,13 @@
 # but all of them (some of these belong in Games tho.).
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+DEBUG = False
+# DEBUG = True 
 
 INITIAL_ROCK_COUNT = 5
 
 PATH_IMAGES = 'images/'
-
-# DEBUG = False
-DEBUG = True
+HEAP = 0.0
 SAFE = False
 #SAFE = True
-LIVES = 500
+LIVES = 50 if DEBUG else 250
