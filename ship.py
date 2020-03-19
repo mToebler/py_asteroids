@@ -98,7 +98,7 @@ class Ship(Flyer):
     
     def hit(self, rock=None):
         """
-        Records the number of hits and activates shields between draws.
+        Registers hits, activates shields, and determines ship's reaction.
         """
         damage = 0
         if self.lives > 0:

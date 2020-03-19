@@ -89,7 +89,7 @@ class Game(arcade.Window):
         # using sets not lists
         self.rocks = set()
         # need to setup the rocks.
-        self.bullets = {}
+        self.bullets = set()
         self.bullet_regulator = 1
         self.score = 0    
 
