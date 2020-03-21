@@ -62,8 +62,6 @@ class Flyer(ABC):
         # Bullet and target use this as is. Not making abstractmethod.
         if self.alive:
             arcade.draw_texture_rectangle(self.center.x, self.center.y, self.texture.width, self.texture.height, self.texture, self.angle)
-            # arcade.draw_circle_filled(self.center.x, self.center.y,
-            #                             self.radius, self.color)
 
     def is_off_screen(self, screen_width, screen_height):
         # check if either x or y is past the provided coordinates.

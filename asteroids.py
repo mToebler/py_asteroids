@@ -31,7 +31,7 @@ class Game(arcade.Window):
     SCORE_COLOR = arcade.color.ANTI_FLASH_WHITE
     COLOR_LIST_LIGHT = [arcade.color.LAVENDER_MIST, arcade.color.ALICE_BLUE, arcade.color.LIGHT_GRAY, arcade.color.PALE_SILVER, arcade.color.LAVENDER_GRAY]
     COLOR_LIST = [(214,176, 98), arcade.color.APPLE_GREEN, arcade.color.ALICE_BLUE, arcade.color.BRANDEIS_BLUE, arcade.color.ELECTRIC_CRIMSON]
-    UPDATE_RATE = 45
+    UPDATE_RATE = 50
     START_KEYS = {arcade.key.RETURN, arcade.key.S}
     GAME_OVER_KEYS = START_KEYS.union({arcade.key.Q})
     #FONTS = ('Courier New', 'monospace')
@@ -58,9 +58,11 @@ class Game(arcade.Window):
         self.levelup_timer = 90  # time between levels
         self.level = 1
         self.ship = Ship()
-        self.rocks = set()
+        # self.rocks = set()
+        self.rocks = []
         self.rock_count = constants.INITIAL_ROCK_COUNT
-        self.bullets = set()
+        # self.bullets = set()
+        self.bullets = []
         self.bullet_regulator = 1
         self.score = 0  
         self._text_color_control = 0.0  
@@ -133,7 +135,7 @@ class Game(arcade.Window):
         self._text_color_control += .05
     
     def draw_help_info(self, text, use_light=True):
-        if text == None: text = '(Q)uit \n(S)tart'
+        if text is None: text = '(Q)uit \n(S)tart'
         if(use_light): colors = Game.COLOR_LIST_LIGHT
         else: colors = Game.COLOR_LIST
         start_x = constants.SCREEN_WIDTH/2 - 38
@@ -181,7 +183,7 @@ class Game(arcade.Window):
             # firing every single frame.
             if arcade.key.SPACE in self.held_keys :
                 if self.bullet_regulator > 0:
-                    self.bullets.add(self.ship.fire())
+                    self.bullets.append(self.ship.fire())
                 self.bullet_regulator *= -1
         else:    
             if not self.held_keys.isdisjoint(Game.START_KEYS):                
@@ -220,14 +222,14 @@ class Game(arcade.Window):
             #!!! increase starting rock count
             self.rock_count += 1
             # OR?
-            self.update_rate += 7
+            self.update_rate += 5
             self.set_update_rate(float(1/self.update_rate))
-            self.rocks.add(TimerRock())
+            self.rocks.append(TimerRock())
             self.levelup_timer = 90
         elif (0 < len(self.rocks) < 3):
             if random.random() * Alien.APPEAR_CHANCE < 1:
                 if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
-                self.rocks.add(Alien())
+                self.rocks.append(Alien())
 
                         
     def set_reset(self):
@@ -247,7 +249,7 @@ class Game(arcade.Window):
                     rock = BigRock(point)
                     if not rock.is_near(self.ship):
                         rerock = False
-            self.rocks.add(rock)
+            self.rocks.append(rock)
         
     def _advance_flyers(self, flyers):
         for flyer in flyers:
@@ -257,7 +259,7 @@ class Game(arcade.Window):
     def _check_flyer_collisions(self):
         """ check for collisions amongst the rocks for bullets, and ship"""
         # create a temp collection to hold the created rocks during this process.
-        new_rocks = set()
+        new_rocks = []
         for rock in self.rocks:
             for bullet in self.bullets:
                 temp_rocks = None
@@ -268,7 +270,7 @@ class Game(arcade.Window):
                     #temp_rocks = rock.split() 
                     # if(rock.alive):
                     #     self.score += rock.points                    
-                    new_rocks.update(rock.split())
+                    new_rocks.extend(rock.split())
                     rock.alive = False
                     bullet.alive = False
                     #Both rock/bullet will be removed
@@ -283,39 +285,25 @@ class Game(arcade.Window):
                     print(f'debug: game._check_flyer_collisions: {rock}')
                 # this will invoke shields if appropriate
                 self.ship.hit(rock) 
-                temp_rocks = rock.split()                 
+                new_rocks.extend(rock.split())
                 self.score += rock.points
-                for tr in temp_rocks:
-                    new_rocks.add(tr)
                 rock.alive = False        
                 break;
             if isinstance(rock, Alien):
                 # chance to fire a bullet at the ship
                 if random.random() * Alien.FIRE_CHANCE < 1:
-                    # as there is no rock.fire(), going to add this funcitonality here.
-                    try:
-                        # alien ships shoot only from the "top" quadrant of their ships.
-                        ####angle = math.sin((rock.center.x - self.ship.center.x)/math.sqrt((rock.center.x - self.ship.center.x)**2 + (rock.center.y - self.ship.center.y)**2))
-                        angle = math.atan2(self.ship.center.y - rock.center.y, self.ship.center.x - rock.center.x)
-                        angle = angle * 180/math.pi
-                    except ZeroDivisionError as e:
-                        # going to swallow this e, and move on.
-                        print(f'\n\nGame.update: caught a {e}. No biggy, moving on.\n\n')
-                        angle = 0
-                    finally:
-                        # let's add 90 degrees to this angle
-                        if(constants.DEBUG): print('_check_flyer_col: angle was ', angle)
-                        ###angle = (angle + 90) % 360
-                        # move on . org
-                    if(constants.DEBUG): print('_check_flyer_col: now using', angle, ' as angle for alien bullet.')
+                    # as there is no rock.fire(), going to add this funcitonality here.                    
+                    angle = math.atan2(self.ship.center.y - rock.center.y, self.ship.center.x - rock.center.x)
+                    angle = angle * 180/math.pi  #convert to degrees
+                    # create new instances of point and velocity
                     p = Point(rock.center.x, rock.center.y)
                     v = Velocity(rock.velocity.dx, rock.velocity.dy)
                     aBullet = AlienBullet(p, angle, v)
                     if(constants.DEBUG): print('_check_flyer_col: new alien bullet:', aBullet)
-                    new_rocks.add(aBullet)
+                    new_rocks.append(aBullet)
         # now add new_rocks set to the mix:
         if len(new_rocks) > 0 : 
-            self.rocks.update(new_rocks)
+            self.rocks.extend(new_rocks)
             
     def _check_window_boundaries(self):
         """
@@ -333,33 +321,13 @@ class Game(arcade.Window):
     
     def _check_zombies(self):
         """Removes zombies"""
-        #consider moving back to lists
-        self.rocks = {rock for rock in self.rocks if rock.alive}                
-        self.bullets = {bullet for bullet in self.bullets if bullet.alive}        
-        # Tried two different approaches. Switching out the sets 
+        # using list comprehensions to create new lists 
+        # rather than removing from the middle several times
+        self.rocks = [rock for rock in self.rocks if rock.alive]                
+        self.bullets = [bullet for bullet in self.bullets if bullet.alive]
+        # Tried two different approaches. Switching out sets/lists
         # seemed faster than removing the elements.
-        # 1. Switching out the set
-        #new_rocks = set()
-        # tying set comprehension here
-        #self.rocks = {rock for rock in self.rocks if rock.alive}
-        # for flyer in self.rocks:
-        #     if flyer.alive:
-        #         new_rocks.add(flyer)
-        #         #self.rocks.discard(flyer)
-        # self.rocks = new_rocks
-        # {rock for rock in self.rocks if rock.alive}
-        # # 2, Removing an element from the set.
-        #self.bullets = {bullet for bullet in self.bullets if bullet.alive}
-        # try:
-        # for flyer in self.rocks:
-        #     if not flyer.alive:
-        #         self.rocks.discard(flyer)
-        # for flyer in self.bullets:
-        #     if not flyer.alive:
-        #         self.bullets.discard(flyer)
-        # # except KeyError as e:
-            # print('Game._check_zombies: caught KeyError removing a bullet. Moving on.', e)
-        
+        # going with lists so no ghosting asteroid effect 
     def _wrap_flyer(self, flyer):
         """
         manipulates a flyer's center point to wrap around the arcade window

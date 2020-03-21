@@ -60,21 +60,21 @@ class BigRock(Rock):
             print(f'\n\nBigRock: split: split!!')
         # create the return collection.
         shards = set()
-        rock = MediumRock(self.center, self.velocity)
+        rock = MediumRock(Point.__deepcopy__(self.center), Velocity.__deepcopy__(self.velocity))
         # y axis is up.
         rock.velocity.dy += 2
         if( constants.DEBUG): 
             print('BigRock.split(): 1st rock: ', rock)
         shards.add(rock)
         # 2nd med. rock:
-        rock = MediumRock(self.center, self.velocity)
+        rock = MediumRock(Point.__deepcopy__(self.center), Velocity.__deepcopy__(self.velocity))
         # y axis is up.
         rock.velocity.dy -= 2
         if( constants.DEBUG): 
             print('BigRock.split(): 2nd rock: ', rock)
         shards.add(rock)
         
-        rock = SmallRock(self.center, self.velocity)
+        rock = SmallRock(Point.__deepcopy__(self.center), Velocity.__deepcopy__(self.velocity))
         rock.velocity.dx += 5
         if( constants.DEBUG): 
             print('BigRock.split(): 3rd rock: ', rock)

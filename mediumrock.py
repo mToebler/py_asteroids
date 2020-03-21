@@ -46,14 +46,14 @@ class MediumRock(Rock):
         if (constants.DEBUG):
             print('MediumRock: split: split!!')
         shards = set()
-        rock = SmallRock(self.center, self.velocity)
+        rock = SmallRock(Point.__deepcopy__(self.center), Velocity.__deepcopy__(self.velocity))
         # y axis is up.
         rock.velocity.dy += 1.5
         rock.velocity.dx += 1.5
         if (constants.DEBUG): 
             print('MediumRock.split(): 1st rock: ', rock)
         shards.add(rock)
-        rock = SmallRock(self.center, self.velocity)
+        rock = SmallRock(Point.__deepcopy__(self.center), Velocity.__deepcopy__(self.velocity))
         # y axis is up.
         rock.velocity.dy -= 1.5
         rock.velocity.dx -= 1.5

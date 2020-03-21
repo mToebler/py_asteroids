@@ -21,6 +21,14 @@ class Point:
     def LOW_POINT(cls):
         return Point(0.0,0.0)
     
+    @classmethod
+    def __deepcopy__(cls, point):
+        if point is None:
+            return point.LOW_POINT()
+        else:
+            return Point(point.x,point.y)
+    
+    
     def __init__(self, x=0.0, y=0.0):
         """initializer. if no values specified, defaulting to (0.0,0.0)"""
         self.x = x
@@ -118,7 +126,10 @@ class Point:
         #return True if self.x > other.x else True if self.y > other.y else True if (self.x == other.x and self.y == other.y) else False
     
     def __eq__(self, other):
-        return ((self.x, self.y) == (other.x, other.y))
+        if other is None:
+            return False
+        else:
+            return ((self.x, self.y) == (other.x, other.y))
     
     def __ne__(self, other):
         return (not(self == other))
