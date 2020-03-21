@@ -43,6 +43,7 @@ class Bullet(Flyer):
         # having implemented this after implementing the other texture assets (rocks & ship)
         # I realize that texture should have been made a part of flyer. For this milestone
         # anyhow, it will remain individual extended class attributes rather than inherited.
+        # self.texture = arcade.load_texture(constants.PATH_IMAGES + 'laserBlue01.png')
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'laserBlue01.png')
         self.radius = Bullet.BULLET_RADIUS
         

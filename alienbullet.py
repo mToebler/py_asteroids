@@ -16,7 +16,7 @@ from rock import Rock
 import constants
 
 class AlienBullet(Bullet, Rock):
-    BULLET_LIFE = 20
+    BULLET_LIFE = 15
     
     def __init__(self, start_point, angle, inherited_velocity):
         #expecting angle to be figured out to be the sin (or cos) 

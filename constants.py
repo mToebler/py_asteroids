@@ -12,7 +12,5 @@ DEBUG = False
 INITIAL_ROCK_COUNT = 5
 
 PATH_IMAGES = 'images/'
-HEAP = 0.0
-SAFE = False
-#SAFE = True
-LIVES = 50 if DEBUG else 250
+
+LIVES = 100

@@ -25,12 +25,8 @@ class Ship(Flyer):
     SHIP_TURN_AMOUNT = 3
     SHIP_RADIUS = 30
     SHIP_THRUST_AMOUNT = 0.25
-    #SHIELD_LIST = [arcade.color.PINK, arcade.color.PINK_LACE, arcade.color.PINK_LAVENDER, arcade.color.PINK_PEARL, arcade.color.PINK_SHERBET]
     SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.ALICE_BLUE, arcade.color.LIGHT_GRAY, arcade.color.PALE_SILVER, arcade.color.LAVENDER_GRAY]
-    #SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.LAVENDER, arcade.color.LAVENDER_BLUE, arcade.color.LAVENDER_BLUSH, arcade.color.LAVENDER_GRAY]
-    #SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.LAVENDER, arcade.color.DIAMOND, arcade.color.LAVENDER_BLUSH, arcade.color.LAVENDER_GRAY]
-    #SHIELD_LIST = [arcade.color.LIGHT_CYAN, arcade.color.DIAMOND, arcade.color.PALE_SILVER, arcade.color.ALICE_BLUE, arcade.color.CELESTE]
-
+    
     def __init__(self):
         super().__init__()
         self.center = Point(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
@@ -39,7 +35,7 @@ class Ship(Flyer):
         self.velocity = LimitedVelocity()
         # Using a sprite to reduce the size of the ship. Adding two 
         # textures for thrusting effects. 
-        self.sprite = arcade.Sprite(constants.PATH_IMAGES + 'playerShip1_orange.png', 0.65)
+        self.sprite = arcade.Sprite(constants.PATH_IMAGES + 'playerShip1_orange.png', 0.60)
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
         self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
         self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2-0.png')
@@ -110,10 +106,10 @@ class Ship(Flyer):
                 # velocity changes on impact. Add velocities together
                 v = rock.velocity
                 if rock.spin != 0 :
-                    v.dx *= 1/(abs(rock.spin) * 1.5)
-                    v.dy *=  1/(abs(rock.spin) * 1.5)
+                    v.dx *= 1/(abs(rock.spin) * 1.25)
+                    v.dy *=  1/(abs(rock.spin) * 1.25)
                     v = self.velocity + v
-                    self.velocity.set_velocity(v.dx/2, v.dy/2)
+                    self.velocity.set_velocity(v.dx * 0.65, v.dy * 0.65)
             else :
                 damage = 1 # maybe this could be added to initial if
         else:
