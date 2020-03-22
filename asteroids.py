@@ -222,6 +222,9 @@ class Game(arcade.Window):
 
             if arcade.key.UP in self.held_keys:
                 self.ship.thrust()
+                
+            if arcade.key.DOWN in self.held_keys:
+                self.ship.brake()
 
             # Machine gun mode... bullet_regulator keeps the laser from 
             # firing every single frame.

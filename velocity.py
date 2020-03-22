@@ -53,6 +53,22 @@ class Velocity:
         else:
             print(f'Velocity __add__: {other} not an instance of Veloctiy. Nothing added.')
         return return_v
+    
+    def slow(self, magnitude):
+        """Slows velocity by magnitude"""
+        # use speed multiplied by magnitude to get new speed, then use 
+        # Pythagorean theorem to figure new dx, dy
+        if  0 < magnitude < 1:            
+            dx = 0
+            dy = 0
+            new_speed = self.speed * (1 - magnitude)
+            if (self.dx != 0 and self.dy != 0):
+                dx = new_speed * (math.sqrt(self.dx**2)/math.sqrt(self.dy**2 + self.dx**2)) * self.dx/abs(self.dx)
+                dy = new_speed * (math.sqrt(self.dy**2)/math.sqrt(self.dy**2 + self.dx**2)) * self.dy/abs(self.dy)      
+            else :                
+                dx = new_speed * self.dx
+                dy = new_speed * self.dy
+            self.dx, self.dy = dx,  dy
             
     @classmethod
     def cosine(cls, degrees):

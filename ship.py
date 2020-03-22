@@ -33,6 +33,7 @@ class Ship(Flyer):
     I_SHIELDING = 3
     I_TURNING_LEFT = 4
     I_TURNING_RIGHT = 5
+    I_BRAKING = 6
     
     def __init__(self):
         super().__init__()
@@ -49,11 +50,13 @@ class Ship(Flyer):
         self.shielding_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_shields-inv2.png')
         self.turning_left_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_left_turn_flare.png')
         self.turning_right_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_right_turn_flare.png')
+        self.braking_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip_brakes.png')
         self.sprite.textures.append(self.thrusting_texture) # this is texture 1
         self.sprite.textures.append(self.thrusting_alt_texture) # this is texture 2
         self.sprite.textures.append(self.shielding_texture) # this is texture 3
         self.sprite.textures.append(self.turning_left_texture) # this is texture 4
         self.sprite.textures.append(self.turning_right_texture) # this is texture 5
+        self.sprite.textures.append(self.braking_texture) # this is texture 6
         self.sprite.set_texture(0) # the original image
         self.radius = self.sprite.height / 2  * 0.9 #Ship.SHIP_RADIUS
         self.lives = constants.LIVES
@@ -67,6 +70,7 @@ class Ship(Flyer):
         self.__thrusting = False
         self.__turning_left = False
         self.__turning_right = False
+        self.__braking = False
         
 
     def turn(self, angle):
@@ -87,10 +91,19 @@ class Ship(Flyer):
         """Turns counter-clockise by Ship.SHIP_TURN_AMOUNT"""
         self.turn(Ship.SHIP_TURN_AMOUNT * -1)
         self.__turning_right = True
+        
     def stabilize(self):
         """stops the twirling"""
         #self.rotation.drag = .5
         self.rotation.stabilize(.5)
+        # dampen the current velocity, NOT the angle ship is pointed towards 
+        # we are headed
+        
+    def brake(self):
+        """applies "brakes" and stabilizes """
+        self.velocity.slow(Ship.SHIP_THRUST_AMOUNT * .4)
+        self.stabilize()
+        self.__braking = True
         
     def thrust(self):
         """Applies force towards the current angle's direction"""
@@ -107,7 +120,7 @@ class Ship(Flyer):
         # need to adjust center point to take into account the length or the ship, or barrel
         # of laser cannon. adjacent is going to be the radius for this calculation.
         if(self.alive):
-            radius_adjust = self.texture.height/2 + 2
+            radius_adjust = self.sprite.height/2 + 2
             lazer_barrel_end = Point(radius_adjust * Velocity.cosine(self.rotation.angle + 90), 
                                     radius_adjust * Velocity.sine(self.rotation.angle + 90))
             lazer_barrel_end = lazer_barrel_end + self.center
@@ -189,5 +202,10 @@ class Ship(Flyer):
                 self.sprite.set_texture(Ship.I_TURNING_RIGHT)
                 self.sprite.draw()
                 self.__turning_right = False
+            if self.__braking:
+                self.sprite.set_texture(Ship.I_BRAKING)
+                self.sprite.draw()
+                self.__braking = False
+                
 
                 
