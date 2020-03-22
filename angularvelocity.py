@@ -10,10 +10,13 @@ Methods:
 import math
 from velocity import Velocity
 from point import Point
+import constants
 
 class AngularVelocity(Velocity):
     #static class variables
     MAX_VIABILITY = 1
+    MAX_DRAG = .85 # CANNOT BE 0
+    MAX_SPIN = 30
     
     """
     This is an experimental class hoping to capture the marriage of velocity
@@ -33,9 +36,13 @@ class AngularVelocity(Velocity):
         self.dx = velocity.dx
         self.dy = velocity.dy
         self.focal_point = Point()
+        # the momentum in the rotation
+        self.delta_angle = 0
         # drag represents the inertia decay of movements. if this is 
         # set to AngularVelocity.MAX_VIABILITY, rotation will have no inertia.
-        self._drag = 0.05
+        self._drag = .85
+        # percentage by which drag decays from it's maximum each cycle.
+        self.decay = 0.05
     
     @property
     def angle(self):
@@ -64,28 +71,42 @@ class AngularVelocity(Velocity):
     @property
     def viability(self):
         return AngularVelocity.MAX_VIABILITY - self._drag
+    
+    @classmethod
+    def max_twirl(cls):
+        return AngularVelocity.MAX_SPIN * (1/AngularVelocity.MAX_DRAG)
         
-    def turn(self, angle):
+    def turn(self, degrees):
         """
         In 0g environment, any movements are going to have some inertia 
         to them. Hence, the velocity attached to rotation.
         """
-        self.angle = self.angle + angle
-        self.dx = self.viability * math.sin(angle)
-        self.dy = self.viability * math.cos(angle)
+        self.delta_angle = (self.delta_angle + degrees) if (self.delta_angle + degrees) < AngularVelocity.max_twirl() else AngularVelocity.max_twirl()
+        self.drag = AngularVelocity.MAX_DRAG
+        # self.angle = self.angle + degrees
+
+    def stabilize(self, factor):
+        """Studies angular rotation"""
+        self.drag = factor
+
         
     def advance(self):
         """
         Advances angle from one moment to the next by it's angular velocity
         """
-        pass
-        #self.angle 
+        # delta angle is reduced by less and less each iteration that 
+        # turn has not been called.
+        if abs(self.delta_angle)> 0:
+             self.drag *= self.viability 
+        self.delta_angle -= (self.delta_angle * self.drag)
+        self.angle = self.angle + self.delta_angle
         
 #testing
 # av = AngularVelocity()
 # av.angle = 540
 # print(av.angle)
         
+#print (AngularVelocity.max_twirl())
         
         
         

@@ -18,6 +18,50 @@ from bigrock import BigRock
 from alien import Alien
 from timerrock import TimerRock
 
+###
+"""
+Above and beyonds:
+1.: Limited Velocity class put a speed limit in place without hampering 
+    ships inertia.
+2.: The Ship has shields. Impacts with different sized objects have 
+    proportional ship and shield responses: larger objects deduct more 
+    from shields; and commensurate velocity is transferred.
+3.: Hostile photon shooting Aliens appear by chance when the asteroid 
+    count gets below 4. (They've improved their aim at the cost of 
+    their range.)
+4.: Notable Animations:
+      - Ship thrusting & turn impulse flames (thrust flames flicker)
+      - Shields activate on impact
+      - Background turns every so slightly.
+5.: Spin Velocity: similar to the asteroids' spin inertia, the ship 
+    utilizes a rotational velocity class though with some dampened inertia
+    for playability. 
+    (The higher the rotational speed, the more it is initially dampened.
+     Rotational inertia persists lingeringly by design. Thrusting forward
+     mitigates this, though thrust turning does not.)
+6.: Score is kept during the game instance and reacts to remaining shields.
+7.: Game can be started when Game Over'ed by hitting RETURN or 'S', 
+    'Q' will quit the game between instances. Instructional text appears
+    on screen.
+8.: Levels: When asteroids & aliens are cleared, the next level starts
+    smoothly with an additional asteroid and a slightly faster pace.
+9.: Lots of little things if you take the time to examine the code: 
+    List comprehensions, multiple inheritance, exception handling, and 
+    separation of concerns (mostly). I've tried to apply a consistent 
+    object model throughout the game; however these last few weeks have 
+    been chaotic (like everyone) and not all the code is cleaned, nor 
+    are all the many, many comments sync'd.
+
+As an aside, you suggested perhaps I reduce the comments in my code; 
+this was a surprise as most instructors encourage them. My advisor 
+continues to support them, citing a marked lack of needed comments within 
+the industry and students in particular. Perhaps you could be clearer: 
+Comment Quantity? My tone? Consistency? Comments are part of my design 
+process. I'd like them to be useful to others, rather than a burden to 
+sift through (or worse). Please, truly, more feedback is appreciated. 
+I understand you've a larger number of students this semester; I've 
+tried to help out where I could.
+"""
 # Global constants moved to constants.py
 class Game(arcade.Window):
     """
@@ -156,8 +200,8 @@ class Game(arcade.Window):
             self.process_extras()
         self.check_keys()
         self._advance_flyers(self.rocks)
-        self._advance_flyers(self.bullets)
-        self.ship.advance()
+        self._advance_flyers(self.bullets)        
+        self.ship.advance()        
         self._check_window_boundaries()
         self._check_zombies()
         self._check_flyer_collisions()
@@ -267,9 +311,6 @@ class Game(arcade.Window):
                     self.score += rock.points
                     if (constants.DEBUG): 
                         print(f'debug: game._check_flyer_collisions: {bullet}')
-                    #temp_rocks = rock.split() 
-                    # if(rock.alive):
-                    #     self.score += rock.points                    
                     new_rocks.extend(rock.split())
                     rock.alive = False
                     bullet.alive = False

@@ -22,10 +22,17 @@ class Ship(Flyer):
     ship.
     """
     #class constants
-    SHIP_TURN_AMOUNT = 3
+    SHIP_TURN_AMOUNT = 1
     SHIP_RADIUS = 30
     SHIP_THRUST_AMOUNT = 0.25
     SHIELD_LIST = [arcade.color.LAVENDER_MIST, arcade.color.ALICE_BLUE, arcade.color.LIGHT_GRAY, arcade.color.PALE_SILVER, arcade.color.LAVENDER_GRAY]
+    # sprite texture indices
+    I_SHIP = 0          
+    I_THRUSTING = 1
+    I_THRUSTING_ALT = 2
+    I_SHIELDING = 3
+    I_TURNING_LEFT = 4
+    I_TURNING_RIGHT = 5
     
     def __init__(self):
         super().__init__()
@@ -39,10 +46,14 @@ class Ship(Flyer):
         self.texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange.png')
         self.thrusting_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2.png')
         self.thrusting_alt_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_thrust2-0.png')
-        self.shielding_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_shields2.png')
+        self.shielding_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_shields-inv2.png')
+        self.turning_left_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_left_turn_flare.png')
+        self.turning_right_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_right_turn_flare.png')
         self.sprite.textures.append(self.thrusting_texture) # this is texture 1
         self.sprite.textures.append(self.thrusting_alt_texture) # this is texture 2
         self.sprite.textures.append(self.shielding_texture) # this is texture 3
+        self.sprite.textures.append(self.turning_left_texture) # this is texture 4
+        self.sprite.textures.append(self.turning_right_texture) # this is texture 5
         self.sprite.set_texture(0) # the original image
         self.radius = self.sprite.height / 2  * 0.9 #Ship.SHIP_RADIUS
         self.lives = constants.LIVES
@@ -54,21 +65,33 @@ class Ship(Flyer):
         # just private
         self.__thrust = Ship.SHIP_THRUST_AMOUNT
         self.__thrusting = False
+        self.__turning_left = False
+        self.__turning_right = False
+        
 
     def turn(self, angle):
-        """rotates by the given angle"""
-        #AngularVelocity will handle rotations
-        self.rotation.angle = self.rotation.angle + angle        
+        """
+        rotates by the given angle (degrees). allows for other 
+        objects to effect spin (impacts)
+        """
+        #AngularVelocity handles turns.
+        self.rotation.turn(angle)
         if (constants.DEBUG): print(f'Ship: turn(): angle = {self.rotation.angle}; radians = {self.rotation.angle *  math.pi / 180}')
         
     def turn_left(self):
         """Turns clockise by Ship.SHIP_TURN_AMOUNT"""
         self.turn(Ship.SHIP_TURN_AMOUNT)
+        self.__turning_left = True
         
     def turn_right(self):
         """Turns counter-clockise by Ship.SHIP_TURN_AMOUNT"""
         self.turn(Ship.SHIP_TURN_AMOUNT * -1)
-    
+        self.__turning_right = True
+    def stabilize(self):
+        """stops the twirling"""
+        #self.rotation.drag = .5
+        self.rotation.stabilize(.5)
+        
     def thrust(self):
         """Applies force towards the current angle's direction"""
         dx = self.velocity.dx + (self.__thrust * Velocity.cosine(self.rotation.angle + 90))
@@ -110,6 +133,7 @@ class Ship(Flyer):
                     v.dy *=  1/(abs(rock.spin) * 1.25)
                     v = self.velocity + v
                     self.velocity.set_velocity(v.dx * 0.65, v.dy * 0.65)
+                    self.rotation.turn(rock.spin * -1)
             else :
                 damage = 1 # maybe this could be added to initial if
         else:
@@ -121,7 +145,9 @@ class Ship(Flyer):
         """Moves Ship from one moment to the next."""
         self.center.move_by(self.velocity)
         # implementing this at a later date
-        #self.rotation.advance()
+        if self.__thrusting: self.stabilize()
+        self.rotation.advance()
+        
         self.sprite.center_x = self.center.x
         self.sprite.center_y = self.center.y
         self.sprite.angle = self.rotation.angle 
@@ -155,4 +181,13 @@ class Ship(Flyer):
                 if(constants.DEBUG):
                     print(f'ship.draw.shielding: iteration_hits: {self._iteration_hits} color: {Ship.SHIELD_LIST[self._iteration_hits%len(Ship.SHIELD_LIST)]}')
                 self.shielding = False; self._iteration_hits -= 1
+            if (self.__turning_left):
+                self.sprite.set_texture(Ship.I_TURNING_LEFT)
+                self.sprite.draw()
+                self.__turning_left = False
+            elif self.__turning_right:
+                self.sprite.set_texture(Ship.I_TURNING_RIGHT)
+                self.sprite.draw()
+                self.__turning_right = False
+
                 
