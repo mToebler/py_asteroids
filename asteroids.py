@@ -156,8 +156,6 @@ class Game(arcade.Window):
         if self.ship is not None: # and self.ship.lives / constants.LIVES < 0.5:
             color_index = (self.ship.lives-1) * 3 // constants.LIVES 
             info_color = Game.COLOR_LIST[color_index]
-            # if self.ship.lives / constants.LIVES < 0.25:
-            #     info_color = Game.COLOR_LIST[2]
         else:
             info_color = Game.SCORE_COLOR
         arcade.draw_text(score_text, start_x=start_x, start_y=start_y, 

@@ -1,7 +1,7 @@
 """
 Author:Mark Tobler
 File: alienbullet.py
-Description: AlienBullet extends noth the Bullet class and the Rock class. It
+Description: AlienBullet extends both the Bullet class and the Rock class. It
             is using the Rock class more as an interface so that it can
             be put into the rocks collection in Game to allow for 
             collision checks. As such, it implements the abstract split method.
