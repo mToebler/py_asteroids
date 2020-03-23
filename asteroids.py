@@ -22,7 +22,7 @@ from timerrock import TimerRock
 """
 Above and beyonds:
 1.: Limited Velocity class put a speed limit in place without hampering 
-    ships inertia.
+    ships inertia. Inertia dampens with the down key.
 2.: The Ship has shields. Impacts with different sized objects have 
     proportional ship and shield responses: larger objects deduct more 
     from shields; and commensurate velocity is transferred.
@@ -35,10 +35,10 @@ Above and beyonds:
       - Background turns every so slightly.
 5.: Spin Velocity: similar to the asteroids' spin inertia, the ship 
     utilizes a rotational velocity class though with some dampened inertia
-    for playability. 
+    for playability. Inertia dampens with the down key.
     (The higher the rotational speed, the more it is initially dampened.
      Rotational inertia persists lingeringly by design. Thrusting forward
-     mitigates this, though thrust turning does not.)
+     mitigates this, or brakes (down), though thrust turning does not.)
 6.: Score is kept during the game instance and reacts to remaining shields.
 7.: Game can be started when Game Over'ed by hitting RETURN or 'S', 
     'Q' will quit the game between instances. Instructional text appears

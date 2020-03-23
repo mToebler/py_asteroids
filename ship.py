@@ -50,7 +50,7 @@ class Ship(Flyer):
         self.shielding_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_orange_shields-inv2.png')
         self.turning_left_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_left_turn_flare.png')
         self.turning_right_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip1_right_turn_flare.png')
-        self.braking_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip_brakes.png')
+        self.braking_texture = arcade.load_texture(constants.PATH_IMAGES + 'playerShip_brakes3.png')
         self.sprite.textures.append(self.thrusting_texture) # this is texture 1
         self.sprite.textures.append(self.thrusting_alt_texture) # this is texture 2
         self.sprite.textures.append(self.shielding_texture) # this is texture 3
