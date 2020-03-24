@@ -27,12 +27,13 @@ Above and beyonds:
     proportional ship and shield responses: larger objects deduct more 
     from shields; and commensurate velocity is transferred.
 3.: Hostile photon shooting Aliens appear by chance when the asteroid 
-    count gets below 4. (They've improved their aim at the cost of 
+    count gets below 3. (They've improved their aim at the cost of 
     their range.)
 4.: Notable Animations:
       - Ship thrusting & turn impulse flames (thrust flames flicker)
       - Shields activate on impact
       - Background turns every so slightly.
+      - Pulsar-field brakes
 5.: Spin Velocity: similar to the asteroids' spin inertia, the ship 
     utilizes a rotational velocity class though with some dampened inertia
     for playability. Inertia dampens with the down key.
@@ -40,12 +41,16 @@ Above and beyonds:
      Rotational inertia persists lingeringly by design. Thrusting forward
      mitigates this, or brakes (down), though thrust turning does not.)
 6.: Score is kept during the game instance and reacts to remaining shields.
-7.: Game can be started when Game Over'ed by hitting RETURN or 'S', 
+7.: Game can be started when Game Over'ed by hitting RETURN, 'R', or 'S'. 
     'Q' will quit the game between instances. Instructional text appears
     on screen.
 8.: Levels: When asteroids & aliens are cleared, the next level starts
     smoothly with an additional asteroid and a slightly faster pace.
-9.: Lots of little things if you take the time to examine the code: 
+9.: Bullets are Bullets: Alien Bullets and regular bullets destroy 
+    whatever they come in contact with: other aliens, asteroids, ships.
+    There are just two compact lists rocks and bullets now. Some comments
+    may be out of sync with this as I've a last minute (><) change.
+10.:Lots of little things if you take the time to examine the code: 
     List comprehensions, multiple inheritance, exception handling, and 
     separation of concerns (mostly). I've tried to apply a consistent 
     object model throughout the game; however these last few weeks have 
