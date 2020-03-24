@@ -76,7 +76,7 @@ class Game(arcade.Window):
     COLOR_LIST_LIGHT = [arcade.color.LAVENDER_MIST, arcade.color.ALICE_BLUE, arcade.color.LIGHT_GRAY, arcade.color.PALE_SILVER, arcade.color.LAVENDER_GRAY]
     COLOR_LIST = [(214,176, 98), arcade.color.APPLE_GREEN, arcade.color.ALICE_BLUE, arcade.color.BRANDEIS_BLUE, arcade.color.ELECTRIC_CRIMSON]
     UPDATE_RATE = 50
-    START_KEYS = {arcade.key.RETURN, arcade.key.S}
+    START_KEYS = {arcade.key.RETURN, arcade.key.S, arcade.key.R}
     GAME_OVER_KEYS = START_KEYS.union({arcade.key.Q})
     #FONTS = ('Courier New', 'monospace')
     FONTS = ('Lucida Console', 'Monaco', 'monospace')
@@ -303,8 +303,10 @@ class Game(arcade.Window):
             
     def _check_flyer_collisions(self):
         """ check for collisions amongst the rocks for bullets, and ship"""
+        """ Where the flyers are added from the collection."""
         # create a temp collection to hold the created rocks during this process.
         new_rocks = []
+        new_bullets = []
         for rock in self.rocks:
             for bullet in self.bullets:
                 temp_rocks = None
@@ -320,6 +322,12 @@ class Game(arcade.Window):
                     break;  #break
                     # why break and not continue? break stops all bullets for this dead rock
                     # continue just stops this iteration.
+                if (self.ship.alive and self.ship.is_near(bullet)):
+                    # both aliens and ships can be harmed by their own bullets.
+                    bullet.alive = False
+                    self.ship.hit(bullet)
+                    break;  #out of this iteration of bullet (it's dead)
+                    
                     
             if self.ship.alive and rock.is_near(self.ship):
                 if (constants.DEBUG):
@@ -334,18 +342,23 @@ class Game(arcade.Window):
             if isinstance(rock, Alien):
                 # chance to fire a bullet at the ship
                 if random.random() * Alien.FIRE_CHANCE < 1:
-                    # as there is no rock.fire(), going to add this funcitonality here.                    
-                    angle = math.atan2(self.ship.center.y - rock.center.y, self.ship.center.x - rock.center.x)
-                    angle = angle * 180/math.pi  #convert to degrees
-                    # create new instances of point and velocity
-                    p = Point(rock.center.x, rock.center.y)
-                    v = Velocity(rock.velocity.dx, rock.velocity.dy)
-                    aBullet = AlienBullet(p, angle, v)
+                    # # as there is no rock.fire(), going to add this funcitonality here.                    
+                    # angle = math.atan2(self.ship.center.y - rock.center.y, self.ship.center.x - rock.center.x)
+                    # angle = angle * 180/math.pi  #convert to degrees
+                    # # create new instances of point and velocity
+                    # p = Point(rock.center.x, rock.center.y)
+                    # v = Velocity(rock.velocity.dx, rock.velocity.dy)
+                    # aBullet = AlienBullet(p, angle, v)
+                    aBullet = rock.fire(self.ship)
                     if(constants.DEBUG): print('_check_flyer_col: new alien bullet:', aBullet)
-                    new_rocks.append(aBullet)
+                    #new_rocks.append(aBullet)
+                    new_bullets.append(aBullet)
         # now add new_rocks set to the mix:
         if len(new_rocks) > 0 : 
             self.rocks.extend(new_rocks)
+        if len(new_bullets) > 0:
+            self.bullets.extend(new_bullets)
+        
             
     def _check_window_boundaries(self):
         """

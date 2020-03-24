@@ -12,7 +12,9 @@ Description: Flying alien space ship. Alien ship image is provided by
 import arcade 
 import random
 import constants
+import math
 from velocity import Velocity
+from alienbullet import AlienBullet
 from flyer import Flyer
 from point import Point
 from rock import Rock
@@ -28,9 +30,9 @@ class Alien(Rock):
     """
     # plan is to add this directly to the rocks collection in Game...?
     # Some constant properties:
-    CHANGE_CHANCE = 100
+    CHANGE_CHANCE = 80
     #APPEAR_CHANCE = 750
-    APPEAR_CHANCE = 250
+    APPEAR_CHANCE = 275
     #FIRE_CHANCE = 100
     FIRE_CHANCE = 25
     
@@ -62,5 +64,28 @@ class Alien(Rock):
     def split(self):
         self.alive = False
         return set()
+
+    def fire(self, target):
+        """
+        Returns an AlienBullet with a trajectory towards the target's'
+        current location.
+        """
+        angle = math.atan2(target.center.y - self.center.y, target.center.x - self.center.x)
+        angle = angle * 180/math.pi  #convert to degrees        
+        # put the origin point of the bullet far enough
+        # away it does not photon itself.
+        radius_adjust = self.texture.height/2 * 1.25
+        laser_barrel_end = Point(radius_adjust * Velocity.cosine(angle), 
+                                radius_adjust * Velocity.sine(angle))
+        laser_barrel_end = laser_barrel_end + self.center
+        
+        p = Point(laser_barrel_end.x, laser_barrel_end.y)
+        v = Velocity(self.velocity.dx, self.velocity.dy)
+        
+        return AlienBullet(p, angle, v)
+    
+        
+        
+        
     
     

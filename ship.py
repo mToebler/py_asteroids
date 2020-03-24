@@ -121,10 +121,10 @@ class Ship(Flyer):
         # of laser cannon. adjacent is going to be the radius for this calculation.
         if(self.alive):
             radius_adjust = self.sprite.height/2 + 2
-            lazer_barrel_end = Point(radius_adjust * Velocity.cosine(self.rotation.angle + 90), 
+            laser_barrel_end = Point(radius_adjust * Velocity.cosine(self.rotation.angle + 90), 
                                     radius_adjust * Velocity.sine(self.rotation.angle + 90))
-            lazer_barrel_end = lazer_barrel_end + self.center
-            return Bullet(lazer_barrel_end, self.rotation.display_angle, self.velocity)
+            laser_barrel_end = laser_barrel_end + self.center
+            return Bullet(laser_barrel_end, self.rotation.display_angle, self.velocity)
         else:
             return TimerBullet()
     
