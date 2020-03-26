@@ -14,6 +14,7 @@ from angularvelocity import AngularVelocity
 from point import Point
 from bullet import Bullet
 from rock import Rock
+from emitter import ParticleBurst
 
 class Ship(Flyer):
     """
@@ -61,6 +62,7 @@ class Ship(Flyer):
         self.radius = self.sprite.height / 2  * 0.9 #Ship.SHIP_RADIUS
         self.lives = constants.LIVES
         self.shielding = False
+        self.burst = None
         
         #protected
         self._iteration_hits = 0
@@ -151,19 +153,25 @@ class Ship(Flyer):
                 damage = 1 # maybe this could be added to initial if
         else:
             self.alive = False
+            self.burst = ParticleBurst((self.center.x, self.center.y), self.velocity)
         self.lives -= damage; self.lives = 0 if self.lives < 0 else self.lives
         self._iteration_hits += damage
         
-    def advance(self):  
+    def advance(self, delta_time):  
         """Moves Ship from one moment to the next."""
-        self.center.move_by(self.velocity)
-        # implementing this at a later date
-        if self.__thrusting: self.stabilize()
-        self.rotation.advance()
-        
-        self.sprite.center_x = self.center.x
-        self.sprite.center_y = self.center.y
-        self.sprite.angle = self.rotation.angle 
+        if self.alive:
+            self.center.move_by(self.velocity)
+            # implementing this at a later date
+            if self.__thrusting: self.stabilize()
+            self.rotation.advance()
+            
+            self.sprite.center_x = self.center.x
+            self.sprite.center_y = self.center.y
+            self.sprite.angle = self.rotation.angle 
+        else:
+            if self.burst:
+                if self.burst.alive:
+                    self.burst.advance(delta_time)
 
     def draw(self):
         """
@@ -206,6 +214,9 @@ class Ship(Flyer):
                 self.sprite.set_texture(Ship.I_BRAKING)
                 self.sprite.draw()
                 self.__braking = False
-                
+        else:
+            if self.burst:
+                if self.burst.alive:
+                    self.burst.draw()
 
                 

@@ -32,7 +32,7 @@ class Alien(Rock):
     # Some constant properties:
     CHANGE_CHANCE = 80
     #APPEAR_CHANCE = 750
-    APPEAR_CHANCE = 275
+    APPEAR_CHANCE = 250
     #FIRE_CHANCE = 100
     FIRE_CHANCE = 25
     
@@ -46,8 +46,10 @@ class Alien(Rock):
             # so center will have an x = SCREEN_WIDTH and velocity will need to be x -
             self.center = Point(constants.SCREEN_WIDTH, random.random() * constants.SCREEN_HEIGHT)
             self.velocity = Velocity(-2.0, 2.0)
-                
-        self.texture = arcade.load_texture(constants.PATH_IMAGES + 'alien_ship_green-sm.png')
+        if random.random() * 100 % 2 > 1:
+            self.texture = arcade.load_texture(constants.PATH_IMAGES + 'alien_ship_green-sm.png')
+        else:
+            self.texture = arcade.load_texture(constants.PATH_IMAGES + 'alien_ship_green.png')
         self.radius = self.texture.width//2 * 0.75
         self.angle = 0
         

@@ -204,7 +204,7 @@ class Game(arcade.Window):
         self.check_keys()
         self._advance_flyers(self.rocks)
         self._advance_flyers(self.bullets)        
-        self.ship.advance()        
+        self.ship.advance(delta_time)        
         self._check_window_boundaries()
         self._check_zombies()
         self._check_flyer_collisions()
@@ -276,7 +276,7 @@ class Game(arcade.Window):
             self.set_update_rate(float(1/self.update_rate))
             self.rocks.append(TimerRock())
             self.levelup_timer = 90
-        elif (0 < len(self.rocks) < 3):
+        elif (0 < len(self.rocks) < 4):
             if random.random() * Alien.APPEAR_CHANCE < 1:
                 if(constants.DEBUG): print('\n\nUPDATE: !!! Alien  !!!\n\n')
                 self.rocks.append(Alien())
@@ -316,7 +316,8 @@ class Game(arcade.Window):
             for bullet in self.bullets:
                 temp_rocks = None
                 if (rock.is_near(bullet)):
-                    self.score += rock.points
+                    if not isinstance(bullet, AlienBullet):
+                        self.score += rock.points
                     if (constants.DEBUG): 
                         print(f'debug: game._check_flyer_collisions: {bullet}')
                     new_rocks.extend(rock.split())
